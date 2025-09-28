@@ -1,0 +1,9 @@
+services:
+  backend:
+    image: golang:1.25-alpine
+    ports:
+      - "8080:8080"
+  frontend:
+    image: node:20-alpine
+    ports:
+      - "3000:3000"
