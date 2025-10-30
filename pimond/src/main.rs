@@ -1,4 +1,46 @@
 use std::error::Error;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
+fn file_lines_by_number(
+    path: &str,
+    lines_to_read: &[usize],
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+    let mut result: Vec<String> = Vec::new();
+
+    for (index, line) in reader.lines().enumerate() {
+        if lines_to_read.contains(&index) {
+            result.push(line?);
+        }
+    }
+
+    Ok(result)
+}
+
+fn file_lines_by_key(path: &str, keys_to_read: &[&str]) -> Result<Vec<String>, Box<dyn Error>> {
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+    let mut result: Vec<String> = Vec::new();
+
+    fn does_line_start_with_key(line: &str, keys: &[&str]) -> bool {
+        for key in keys {
+            if line.starts_with(key) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    for line in reader.lines() {
+        let line_content = line?;
+        if does_line_start_with_key(&line_content, keys_to_read) {
+            result.push(line_content);
+        }
+    }
+    Ok(result)
+}
 
 fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
