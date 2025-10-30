@@ -1,3 +1,4 @@
 .env
-pimond/target/
 settings.json
+pimond/target/
+pimond/src/main
