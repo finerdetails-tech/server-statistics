@@ -5,7 +5,7 @@ use std::io::{BufRead, BufReader};
 use std::thread::sleep;
 use std::time::Duration;
 
-#[derive(Debug)]
+#[derive(Serialize)]
 struct Metric {
     name: String,
     value: f64,
@@ -130,7 +130,22 @@ fn get_mem_info() -> Result<Vec<Metric>, Box<dyn Error>> {
     Ok(Vec::from([mem_total, mem_available_mb, mem_usage_percent]))
 }
 
+fn generate_json() -> Result<String, Box<dyn Error>> {
+    let cpu_info = get_cpu_info()?;
+    let mem_info = get_mem_info()?;
+
+    let mut all_metrics = Vec::new();
+    all_metrics.extend(cpu_info);
+    all_metrics.extend(mem_info);
+
+    let json = serde_json::to_string(&all_metrics)?;
+
+    Ok(json)
+}
+
 fn main() {
-    println!("{:?}", get_cpu_info());
-    println!("{:?}", get_mem_info());
+    match generate_json() {
+        Ok(json) => println!("{}", json),
+        Err(e) => eprintln!("Error generating JSON: {}", e),
+    }
 }
