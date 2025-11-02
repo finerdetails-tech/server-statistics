@@ -1,4 +1,4 @@
-use crate::helpers::{file_lines_by_key, file_lines_by_number};
+use crate::helpers::{current_unix_time, file_lines_by_key, file_lines_by_number};
 use serde::Serialize;
 use std::error::Error;
 use std::thread::sleep;
@@ -9,6 +9,7 @@ pub struct Metric {
     name: String,
     value: f64,
     unit: String,
+    timestamp: i64,
 }
 
 pub fn get_cpu_info() -> Result<Vec<Metric>, Box<dyn Error>> {
@@ -44,6 +45,7 @@ pub fn get_cpu_info() -> Result<Vec<Metric>, Box<dyn Error>> {
         name: "cpu_usage_percent".to_string(),
         value: cpu_usage_percent_rounded_value,
         unit: "%".to_string(),
+        timestamp: current_unix_time(),
     };
 
     Ok(Vec::from([cpu_usage]))
@@ -73,17 +75,20 @@ pub fn get_mem_info() -> Result<Vec<Metric>, Box<dyn Error>> {
         name: "mem_total_mb".to_string(),
         value: mem_total_mb_value,
         unit: "MB".to_string(),
+        timestamp: current_unix_time(),
     };
 
     let mem_available_mb = Metric {
         name: "mem_available_mb".to_string(),
         value: mem_available_mb_value,
         unit: "MB".to_string(),
+        timestamp: current_unix_time(),
     };
     let mem_usage_percent = Metric {
         name: "mem_usage_percent".to_string(),
         value: mem_usage_percent_rounded_value,
         unit: "%".to_string(),
+        timestamp: current_unix_time(),
     };
 
     Ok(Vec::from([mem_total, mem_available_mb, mem_usage_percent]))

@@ -41,3 +41,9 @@ pub fn file_lines_by_key(path: &str, keys_to_read: &[&str]) -> Result<Vec<String
     }
     Ok(result)
 }
+
+pub fn current_unix_time() -> i64 {
+    use chrono::prelude::*;
+    let utc: DateTime<Utc> = Utc::now();
+    utc.timestamp()
+}
