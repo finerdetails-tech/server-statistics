@@ -6,13 +6,12 @@ use std::time::Duration;
 
 #[derive(Serialize)]
 pub struct Metric {
-    name: String,
-    value: f64,
-    unit: String,
-    timestamp: i64,
+    pub name: String,
+    pub value: f64,
+    pub timestamp: i64,
 }
 
-pub fn get_cpu_info() -> Result<Vec<Metric>, Box<dyn Error>> {
+pub async fn get_cpu_info() -> Result<Vec<Metric>, Box<dyn Error>> {
     fn measure_cpu_stats() -> Result<[f64; 2], Box<dyn Error>> {
         /* eg. "cpu  2790135 3862 707001 250717019 54271 0 18160 0 0 0" */
         let cpu_line = file_lines_by_number("/proc/stat", &[0])?;
@@ -44,14 +43,13 @@ pub fn get_cpu_info() -> Result<Vec<Metric>, Box<dyn Error>> {
     let cpu_usage = Metric {
         name: "cpu_usage_percent".to_string(),
         value: cpu_usage_percent_rounded_value,
-        unit: "%".to_string(),
         timestamp: current_unix_time(),
     };
 
     Ok(Vec::from([cpu_usage]))
 }
 
-pub fn get_mem_info() -> Result<Vec<Metric>, Box<dyn Error>> {
+pub async fn get_mem_info() -> Result<Vec<Metric>, Box<dyn Error>> {
     let mem_lines = file_lines_by_key("/proc/meminfo", &["MemTotal:", "MemAvailable:"])?;
 
     let mut mem_total_line = mem_lines[0].split_whitespace();
@@ -74,20 +72,17 @@ pub fn get_mem_info() -> Result<Vec<Metric>, Box<dyn Error>> {
     let mem_total = Metric {
         name: "mem_total_mb".to_string(),
         value: mem_total_mb_value,
-        unit: "MB".to_string(),
         timestamp: current_unix_time(),
     };
 
     let mem_available_mb = Metric {
         name: "mem_available_mb".to_string(),
         value: mem_available_mb_value,
-        unit: "MB".to_string(),
         timestamp: current_unix_time(),
     };
     let mem_usage_percent = Metric {
         name: "mem_usage_percent".to_string(),
         value: mem_usage_percent_rounded_value,
-        unit: "%".to_string(),
         timestamp: current_unix_time(),
     };
 

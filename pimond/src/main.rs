@@ -2,13 +2,13 @@ mod get_metrics;
 mod helpers;
 
 use get_metrics::{Metric, get_cpu_info, get_mem_info};
+use helpers::get_env_variable;
+use tokio::time::Duration;
 
-use http::StatusCode;
 use std::error::Error;
 
-fn combine_metrics() -> Result<Vec<Metric>, Box<dyn Error>> {
-    let cpu_info = get_cpu_info()?;
-    let mem_info = get_mem_info()?;
+async fn combine_metrics() -> Result<Vec<Metric>, Box<dyn Error>> {
+    let (cpu_info, mem_info) = tokio::try_join!(get_cpu_info(), get_mem_info())?;
 
     let mut combined_metrics = Vec::new();
     combined_metrics.extend(cpu_info);
@@ -17,24 +17,28 @@ fn combine_metrics() -> Result<Vec<Metric>, Box<dyn Error>> {
     Ok(combined_metrics)
 }
 
-async fn send_http_request(metrics: Vec<Metric>) -> Result<StatusCode, Box<dyn Error>> {
+async fn send_http_request(metrics: Vec<Metric>) -> Result<(), Box<dyn Error>> {
     let client = reqwest::Client::new();
-    let res = client
-        .post("http://127.0.0.1:8080/post")
-        .json(&metrics)
-        .send()
-        .await?;
+    let url = get_env_variable("SERVER_URL")?;
+    let res = client.post(&url).json(&metrics).send().await?;
 
-    Ok(res.status())
+    if !res.status().is_success() {
+        Err(format!("Failed to send metrics, status: {}", res.status()))?
+    }
+    Ok(())
 }
 
-fn main() {
-    let metrics = match combine_metrics() {
-        Ok(m) => m,
-        Err(e) => {
-            eprintln!("Error collecting metrics: {}", e);
-            return;
-        }
-    };
-    send_http_request(metrics);
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    let interval_seconds = get_env_variable("METRICS_INTERVAL_SECONDS")
+        .ok()
+        .and_then(|s| s.parse::<u64>().ok())
+        .unwrap_or(30);
+
+    let mut ticker = tokio::time::interval(Duration::from_secs(interval_seconds));
+    loop {
+        ticker.tick().await;
+        let metrics = combine_metrics().await?;
+        send_http_request(metrics).await?;
+    }
 }

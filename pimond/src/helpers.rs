@@ -1,3 +1,4 @@
+use dotenv;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -46,4 +47,15 @@ pub fn current_unix_time() -> i64 {
     use chrono::prelude::*;
     let utc: DateTime<Utc> = Utc::now();
     utc.timestamp()
+}
+
+pub fn get_env_variable(key: &str) -> Result<String, std::env::VarError> {
+    // Using OS environment variable in prod, fallback to .env file in dev
+    match std::env::var(&key) {
+        Ok(url) => Ok(url),
+        Err(_) => {
+            dotenv::dotenv().ok();
+            std::env::var(&key)
+        }
+    }
 }
