@@ -1,18 +1,20 @@
 mod get_metrics;
 mod helpers;
 
-use get_metrics::{Metric, get_cpu_info, get_mem_info};
+use get_metrics::{Metric, get_cpu_info, get_mem_info, get_temp_info};
 use helpers::get_env_variable;
 use tokio::time::Duration;
 
 use std::error::Error;
 
 async fn combine_metrics() -> Result<Vec<Metric>, Box<dyn Error>> {
-    let (cpu_info, mem_info) = tokio::try_join!(get_cpu_info(), get_mem_info())?;
+    let (cpu_info, mem_info, temp_info) =
+        tokio::try_join!(get_cpu_info(), get_mem_info(), get_temp_info())?;
 
     let mut combined_metrics = Vec::new();
     combined_metrics.extend(cpu_info);
     combined_metrics.extend(mem_info);
+    combined_metrics.extend(temp_info);
 
     Ok(combined_metrics)
 }
@@ -42,6 +44,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     loop {
         ticker.tick().await;
         let metrics = combine_metrics().await?;
+        print!("Sending metrics: {:?}\n", metrics);
         send_http_request(metrics).await?;
     }
 }

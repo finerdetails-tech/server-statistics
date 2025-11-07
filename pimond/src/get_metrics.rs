@@ -4,7 +4,7 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::Duration;
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct Metric {
     pub name: String,
     pub value: f64,
@@ -87,4 +87,16 @@ pub async fn get_mem_info() -> Result<Vec<Metric>, Box<dyn Error>> {
     };
 
     Ok(Vec::from([mem_total, mem_available_mb, mem_usage_percent]))
+}
+
+pub async fn get_temp_info() -> Result<Vec<Metric>, Box<dyn Error>> {
+    let temp_line = file_lines_by_number("/sys/class/thermal/thermal_zone0/temp", &[0])?;
+    let temp_field = temp_line[0].trim();
+    let temp_value = temp_field.parse::<f64>()? / 1000.0;
+
+    Ok(Vec::from([Metric {
+        name: "cpu_temp_celsius".to_string(),
+        value: temp_value,
+        timestamp: current_unix_time(),
+    }]))
 }
