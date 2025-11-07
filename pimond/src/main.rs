@@ -23,7 +23,10 @@ async fn send_http_request(metrics: Vec<Metric>) -> Result<(), Box<dyn Error>> {
     let res = client.post(&url).json(&metrics).send().await?;
 
     if !res.status().is_success() {
-        Err(format!("Failed to send metrics, status: {}", res.status()))?
+        Err(format!(
+            "Failed to send metrics, response: {}",
+            res.text().await?
+        ))?
     }
     Ok(())
 }
