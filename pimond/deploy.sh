@@ -17,6 +17,6 @@ fi
 # Setting Docker socket path for cross
 export DOCKER_HOST=unix:///var/run/docker.sock
 
-cross build --target aarch64-unknown-linux-musl --release
+cross build --target aarch64-unknown-linux-musl --features vendored-openssl --release
 
 rsync --progress "$SCRIPT_DIR/target/aarch64-unknown-linux-musl/release/pimond" "${DEPLOY_HOST}:${DEPLOY_PATH}/"
