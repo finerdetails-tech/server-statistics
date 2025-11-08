@@ -7,7 +7,7 @@ pub fn file_lines_by_number(
     path: &str,
     lines_to_read: &[usize],
 ) -> Result<Vec<String>, Box<dyn Error>> {
-    let file = File::open(path)?;
+    let file = File::open(path).map_err(|e| format!("Failed to open file '{}': {}", path, e))?;
     let reader = BufReader::new(file);
     let mut result: Vec<String> = Vec::new();
 
@@ -21,7 +21,7 @@ pub fn file_lines_by_number(
 }
 
 pub fn file_lines_by_key(path: &str, keys_to_read: &[&str]) -> Result<Vec<String>, Box<dyn Error>> {
-    let file = File::open(path)?;
+    let file = File::open(path).map_err(|e| format!("Failed to open file '{}': {}", path, e))?;
     let reader = BufReader::new(file);
     let mut result: Vec<String> = Vec::new();
 
