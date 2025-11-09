@@ -55,29 +55,27 @@ pub async fn get_mem_info() -> Result<Vec<Metric>, Box<dyn Error>> {
     let mut mem_total_line = mem_lines[0].split_whitespace();
     let mut mem_available_line = mem_lines[1].split_whitespace();
 
-    let mem_total_raw = mem_total_line
+    let mem_total_kb = mem_total_line
         .nth(1)
         .ok_or("Could not read value in mem_total_line")?
         .parse::<f64>()?;
-    let mem_available_raw = mem_available_line
+    let mem_available_kb = mem_available_line
         .nth(1)
         .ok_or("Could not read value in mem_available_line")?
         .parse::<f64>()?;
 
-    let mem_total_mb_value = mem_total_raw / 1000.0;
-    let mem_available_mb_value = mem_available_raw / 1000.0;
-    let mem_usage_percent_raw = (1.0 - (mem_available_mb_value / mem_total_mb_value)) * 100.0;
+    let mem_usage_percent_raw = (1.0 - (mem_available_kb / mem_total_kb)) * 100.0;
     let mem_usage_percent_rounded_value = (mem_usage_percent_raw * 10.0).round() / 10.0;
 
     let mem_total = Metric {
-        name: "mem_total_mb".to_string(),
-        value: mem_total_mb_value,
+        name: "mem_total_kb".to_string(),
+        value: mem_total_kb,
         timestamp: current_unix_time(),
     };
 
-    let mem_available_mb = Metric {
-        name: "mem_available_mb".to_string(),
-        value: mem_available_mb_value,
+    let mem_available_kb = Metric {
+        name: "mem_available_kb".to_string(),
+        value: mem_available_kb,
         timestamp: current_unix_time(),
     };
     let mem_usage_percent = Metric {
@@ -86,7 +84,7 @@ pub async fn get_mem_info() -> Result<Vec<Metric>, Box<dyn Error>> {
         timestamp: current_unix_time(),
     };
 
-    Ok(Vec::from([mem_total, mem_available_mb, mem_usage_percent]))
+    Ok(Vec::from([mem_total, mem_available_kb, mem_usage_percent]))
 }
 
 pub async fn get_temp_info() -> Result<Vec<Metric>, Box<dyn Error>> {
