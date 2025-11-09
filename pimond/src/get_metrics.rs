@@ -1,6 +1,8 @@
 use crate::helpers::{current_unix_time, file_lines_by_key, file_lines_by_number};
+use libc::statvfs;
 use serde::Serialize;
 use std::error::Error;
+use std::ffi::CString;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -97,4 +99,42 @@ pub async fn get_temp_info() -> Result<Vec<Metric>, Box<dyn Error>> {
         value: temp_value,
         timestamp: current_unix_time(),
     }]))
+}
+
+pub async fn get_disk_info() -> Result<Vec<Metric>, Box<dyn Error>> {
+    // Creating an empty pointer to hold the stats
+    let mut stats: libc::statvfs = unsafe { std::mem::zeroed() };
+    // Creating a C-compatible string for the root path
+    let c_path = CString::new("/")?;
+    let res = unsafe { statvfs(c_path.as_ptr(), &mut stats) };
+
+    if res != 0 {
+        return Err("Failed to get filesystem statistics".into());
+    }
+
+    let disk_total_kb_value = stats.f_blocks as f64 * stats.f_frsize as f64;
+    let disk_free_kb_value = stats.f_bfree as f64 * stats.f_frsize as f64;
+    let disk_used_kb_value = disk_total_kb_value - disk_free_kb_value;
+    let disk_used_percent_raw = (disk_used_kb_value / disk_total_kb_value) * 100.0;
+    let disk_used_percent_value = (disk_used_percent_raw * 10.0).round() / 10.0;
+
+    let disk_total_kb = Metric {
+        name: "disk_total_kb".to_string(),
+        value: disk_total_kb_value,
+        timestamp: current_unix_time(),
+    };
+
+    let disk_used_kb = Metric {
+        name: "disk_used_kb".to_string(),
+        value: disk_used_kb_value,
+        timestamp: current_unix_time(),
+    };
+
+    let disk_used_percent = Metric {
+        name: "disk_used_percent".to_string(),
+        value: disk_used_percent_value,
+        timestamp: current_unix_time(),
+    };
+
+    Ok(Vec::from([disk_total_kb, disk_used_kb, disk_used_percent]))
 }
