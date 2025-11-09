@@ -14,6 +14,8 @@ pub fn file_lines_by_number(
     for (index, line) in reader.lines().enumerate() {
         if lines_to_read.contains(&index) {
             result.push(line?);
+        } else {
+            return Err(format!("Line number {} not found", index).into());
         }
     }
 
@@ -38,6 +40,8 @@ pub fn file_lines_by_key(path: &str, keys_to_read: &[&str]) -> Result<Vec<String
         let line_content = line?;
         if does_line_start_with_key(&line_content, keys_to_read) {
             result.push(line_content);
+        } else {
+            return Err(format!("Line keys '{}' not found", keys_to_read.join(", ")).into());
         }
     }
     Ok(result)
