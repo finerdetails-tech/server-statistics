@@ -31,7 +31,7 @@ pub fn file_lines_by_key(path: &str, keys_to_read: &[&str]) -> Result<Vec<String
 
     fn does_line_start_with_key(line: &str, keys: &[&str]) -> bool {
         for key in keys {
-            if line.starts_with(key) {
+            if line.trim_start().starts_with(key) {
                 return true;
             }
         }
