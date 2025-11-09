@@ -10,8 +10,6 @@ use std::time::Duration;
 pub enum MetricValue {
     Float(f64),
     Int(u64),
-    Str(String),
-    Bool(bool),
 }
 
 #[derive(Serialize, Debug)]
