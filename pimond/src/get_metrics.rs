@@ -147,3 +147,36 @@ pub async fn get_disk_info() -> Result<Vec<Metric>, Box<dyn Error>> {
 
     Ok(Vec::from([disk_total_kb, disk_used_kb, disk_used_percent]))
 }
+
+pub async fn get_network_info() -> Result<Vec<Metric>, Box<dyn Error>> {
+    fn measure_network_stats() -> Result<[u64; 2], Box<dyn Error>> {
+        let net_line = file_lines_by_key("/proc/net/dev", &["eth0:"])?;
+        let net_fields = net_line[0].split_whitespace();
+        let net_numbers: Vec<u64> = net_fields.filter_map(|s| s.parse::<u64>().ok()).collect();
+        let received_bytes = net_numbers[0];
+        let transmitted_bytes = net_numbers[9];
+
+        Ok([received_bytes, transmitted_bytes])
+    }
+
+    let [received_bytes, transmitted_bytes] = measure_network_stats()?;
+    sleep(Duration::from_secs(1));
+    let [received_bytes_2, transmitted_bytes_2] = measure_network_stats()?;
+
+    let received_kbps = (received_bytes_2 - received_bytes) / 1024;
+    let transmitted_kbps = (transmitted_bytes_2 - transmitted_bytes) / 1024;
+
+    let received_metric = Metric {
+        name: "throughput_received_kbps".to_string(),
+        value: MetricValue::Int(received_kbps),
+        timestamp: current_unix_time(),
+    };
+
+    let transmitted_metric = Metric {
+        name: "throughput_transmitted_kbps".to_string(),
+        value: MetricValue::Int(transmitted_kbps),
+        timestamp: current_unix_time(),
+    };
+
+    Ok(Vec::from([received_metric, transmitted_metric]))
+}
