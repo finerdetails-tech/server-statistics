@@ -3,3 +3,4 @@ settings.json
 pimond/target/
 pimond/src/main
 target/
+backend/api
