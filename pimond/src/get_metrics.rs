@@ -5,6 +5,7 @@ use std::error::Error;
 use std::ffi::CString;
 use std::thread::sleep;
 use std::time::Duration;
+use std::vec;
 
 #[derive(Serialize, Debug)]
 pub enum MetricValue {
@@ -57,7 +58,7 @@ pub async fn get_cpu_info() -> Result<Vec<Metric>, Box<dyn Error>> {
     Ok(Vec::from([cpu_usage]))
 }
 
-pub async fn get_mem_info() -> Result<Vec<Metric>, Box<dyn Error>> {
+pub async fn get_mem_info(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Error>> {
     let mem_lines = file_lines_by_key("/proc/meminfo", &["MemTotal:", "MemAvailable:"])?;
 
     let mut mem_total_line = mem_lines[0].split_whitespace();
@@ -77,24 +78,27 @@ pub async fn get_mem_info() -> Result<Vec<Metric>, Box<dyn Error>> {
 
     let mem_usage_percent_rounded = (mem_usage_percent_raw * 10.0).round() / 10.0;
 
-    let mem_total = Metric {
-        name: "mem_total_kb".to_string(),
-        value: MetricValue::Int(mem_total_kb as u64),
-        timestamp: current_unix_time(),
-    };
+    let mut metrics = vec![
+        Metric {
+            name: "mem_available_kb".to_string(),
+            value: MetricValue::Int(mem_available_kb as u64),
+            timestamp: current_unix_time(),
+        },
+        Metric {
+            name: "mem_usage_percent".to_string(),
+            value: MetricValue::Float(mem_usage_percent_rounded),
+            timestamp: current_unix_time(),
+        },
+    ];
+    if is_first_iteration {
+        metrics.push(Metric {
+            name: "mem_total_kb".to_string(),
+            value: MetricValue::Int(mem_total_kb as u64),
+            timestamp: current_unix_time(),
+        });
+    }
 
-    let mem_available_kb = Metric {
-        name: "mem_available_kb".to_string(),
-        value: MetricValue::Int(mem_available_kb as u64),
-        timestamp: current_unix_time(),
-    };
-    let mem_usage_percent = Metric {
-        name: "mem_usage_percent".to_string(),
-        value: MetricValue::Float(mem_usage_percent_rounded),
-        timestamp: current_unix_time(),
-    };
-
-    Ok(Vec::from([mem_total, mem_available_kb, mem_usage_percent]))
+    Ok(metrics)
 }
 
 pub async fn get_temp_info() -> Result<Vec<Metric>, Box<dyn Error>> {
@@ -109,7 +113,7 @@ pub async fn get_temp_info() -> Result<Vec<Metric>, Box<dyn Error>> {
     }]))
 }
 
-pub async fn get_disk_info() -> Result<Vec<Metric>, Box<dyn Error>> {
+pub async fn get_disk_info(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Error>> {
     // Creating an empty pointer to hold the stats
     let mut stats: libc::statvfs = unsafe { std::mem::zeroed() };
     // Creating a C-compatible string for the root path
@@ -127,25 +131,28 @@ pub async fn get_disk_info() -> Result<Vec<Metric>, Box<dyn Error>> {
 
     let disk_used_percent = (disk_used_percent_raw * 10.0).round() / 10.0;
 
-    let disk_total_kb = Metric {
-        name: "disk_total_kb".to_string(),
-        value: MetricValue::Int(disk_total_kb),
-        timestamp: current_unix_time(),
-    };
+    let mut metrics = vec![
+        Metric {
+            name: "disk_used_kb".to_string(),
+            value: MetricValue::Int(disk_used_kb),
+            timestamp: current_unix_time(),
+        },
+        Metric {
+            name: "disk_used_percent".to_string(),
+            value: MetricValue::Float(disk_used_percent),
+            timestamp: current_unix_time(),
+        },
+    ];
 
-    let disk_used_kb = Metric {
-        name: "disk_used_kb".to_string(),
-        value: MetricValue::Int(disk_used_kb),
-        timestamp: current_unix_time(),
-    };
+    if is_first_iteration {
+        metrics.push(Metric {
+            name: "disk_total_kb".to_string(),
+            value: MetricValue::Int(disk_total_kb),
+            timestamp: current_unix_time(),
+        });
+    }
 
-    let disk_used_percent = Metric {
-        name: "disk_used_percent".to_string(),
-        value: MetricValue::Float(disk_used_percent),
-        timestamp: current_unix_time(),
-    };
-
-    Ok(Vec::from([disk_total_kb, disk_used_kb, disk_used_percent]))
+    Ok(metrics)
 }
 
 pub async fn get_network_info() -> Result<Vec<Metric>, Box<dyn Error>> {

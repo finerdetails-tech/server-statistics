@@ -11,12 +11,12 @@ use tokio::time::Duration;
 
 use std::error::Error;
 
-async fn combine_metrics() -> Result<Vec<Metric>, Box<dyn Error>> {
+async fn combine_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Error>> {
     let (cpu_info, mem_info, temp_info, disk_info, network_info) = tokio::try_join!(
         get_cpu_info(),
-        get_mem_info(),
+        get_mem_info(is_first_iteration),
         get_temp_info(),
-        get_disk_info(),
+        get_disk_info(is_first_iteration),
         get_network_info()
     )?;
 
@@ -58,15 +58,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Ok(val) if val == "dev" => true,
         _ => false,
     };
+    let mut is_first_iteration = true;
 
     loop {
         ticker.tick().await;
         let metrics = if is_dev {
-            mock_combine_metrics().await?
+            mock_combine_metrics(is_first_iteration).await?
         } else {
-            combine_metrics().await?
+            combine_metrics(is_first_iteration).await?
         };
         print!("Sending metrics: {:?}\n", metrics);
         send_http_request(metrics).await?;
+
+        is_first_iteration = false;
     }
 }
