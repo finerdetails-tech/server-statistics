@@ -1,10 +1,12 @@
 mod get_metrics;
 mod helpers;
+mod mocks;
 
 use get_metrics::{
     Metric, get_cpu_info, get_disk_info, get_mem_info, get_network_info, get_temp_info,
 };
 use helpers::get_env_variable;
+use mocks::mock_combine_metrics;
 use tokio::time::Duration;
 
 use std::error::Error;
@@ -50,9 +52,20 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .unwrap_or(30);
 
     let mut ticker = tokio::time::interval(Duration::from_secs(interval_seconds));
+
+    let env = get_env_variable("ENV");
+    let is_dev = match &env {
+        Ok(val) if val == "dev" => true,
+        _ => false,
+    };
+
     loop {
         ticker.tick().await;
-        let metrics = combine_metrics().await?;
+        let metrics = if is_dev {
+            mock_combine_metrics().await?
+        } else {
+            combine_metrics().await?
+        };
         print!("Sending metrics: {:?}\n", metrics);
         send_http_request(metrics).await?;
     }
