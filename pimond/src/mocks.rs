@@ -1,4 +1,4 @@
-use crate::get_metrics::{Metric, MetricValue};
+use crate::get_metrics::Metric;
 use crate::helpers::current_unix_time;
 use rand::Rng;
 use std::error::Error;
@@ -12,7 +12,7 @@ fn get_random_integer(min: u64, max: u64) -> u64 {
 fn mock_cpu_metrics() -> Result<Vec<Metric>, Box<dyn Error>> {
     Ok(Vec::from([Metric {
         name: "cpu_usage_percent".to_string(),
-        value: MetricValue::Float(get_random_integer(10, 90) as f64),
+        value: get_random_integer(10, 90).to_string(),
         timestamp: current_unix_time(),
     }]))
 }
@@ -21,12 +21,12 @@ fn mock_mem_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Err
     let mut metrics = vec![
         Metric {
             name: "mem_available_kb".to_string(),
-            value: MetricValue::Int(get_random_integer(4096000, 8192000)),
+            value: get_random_integer(4096000, 8192000).to_string(),
             timestamp: current_unix_time(),
         },
         Metric {
             name: "mem_usage_percent".to_string(),
-            value: MetricValue::Float(get_random_integer(10, 90) as f64),
+            value: get_random_integer(10, 90).to_string(),
             timestamp: current_unix_time(),
         },
     ];
@@ -34,7 +34,7 @@ fn mock_mem_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Err
     if is_first_iteration {
         metrics.push(Metric {
             name: "mem_total_kb".to_string(),
-            value: MetricValue::Int(8192000),
+            value: 8192000.to_string(),
             timestamp: current_unix_time(),
         });
     }
@@ -44,7 +44,7 @@ fn mock_mem_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Err
 fn mock_temp_metrics() -> Result<Vec<Metric>, Box<dyn Error>> {
     Ok(Vec::from([Metric {
         name: "cpu_temp_celsius".to_string(),
-        value: MetricValue::Float(get_random_integer(30, 80) as f64),
+        value: get_random_integer(30, 80).to_string(),
         timestamp: current_unix_time(),
     }]))
 }
@@ -53,12 +53,12 @@ fn mock_disk_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Er
     let mut metrics = vec![
         Metric {
             name: "disk_used_kb".to_string(),
-            value: MetricValue::Int(get_random_integer(128000000, 256000000)),
+            value: get_random_integer(128000000, 256000000).to_string(),
             timestamp: current_unix_time(),
         },
         Metric {
             name: "disk_used_percent".to_string(),
-            value: MetricValue::Float(get_random_integer(10, 90) as f64),
+            value: get_random_integer(10, 90).to_string(),
             timestamp: current_unix_time(),
         },
     ];
@@ -66,7 +66,7 @@ fn mock_disk_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Er
     if is_first_iteration {
         metrics.push(Metric {
             name: "disk_total_kb".to_string(),
-            value: MetricValue::Int(256000000),
+            value: 256000000.to_string(),
             timestamp: current_unix_time(),
         });
     }
@@ -77,12 +77,12 @@ fn mock_network_metrics() -> Result<Vec<Metric>, Box<dyn Error>> {
     Ok(Vec::from([
         Metric {
             name: "throughput_received_kbps".to_string(),
-            value: MetricValue::Int(get_random_integer(1000, 10000)),
+            value: get_random_integer(1000, 10000).to_string(),
             timestamp: current_unix_time(),
         },
         Metric {
             name: "throughput_transmitted_kbps".to_string(),
-            value: MetricValue::Int(get_random_integer(1000, 10000)),
+            value: get_random_integer(1000, 10000).to_string(),
             timestamp: current_unix_time(),
         },
     ]))

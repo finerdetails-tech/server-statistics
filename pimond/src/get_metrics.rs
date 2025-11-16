@@ -8,15 +8,9 @@ use std::time::Duration;
 use std::vec;
 
 #[derive(Serialize, Debug)]
-pub enum MetricValue {
-    Float(f64),
-    Int(u64),
-}
-
-#[derive(Serialize, Debug)]
 pub struct Metric {
     pub name: String,
-    pub value: MetricValue,
+    pub value: String,
     pub timestamp: i64,
 }
 
@@ -51,7 +45,7 @@ pub async fn get_cpu_info() -> Result<Vec<Metric>, Box<dyn Error>> {
     let cpu_usage_percent_rounded = (cpu_usage_percent_raw * 10.0).round() / 10.0;
     let cpu_usage = Metric {
         name: "cpu_usage_percent".to_string(),
-        value: MetricValue::Float(cpu_usage_percent_rounded),
+        value: cpu_usage_percent_rounded.to_string(),
         timestamp: current_unix_time(),
     };
 
@@ -81,19 +75,19 @@ pub async fn get_mem_info(is_first_iteration: bool) -> Result<Vec<Metric>, Box<d
     let mut metrics = vec![
         Metric {
             name: "mem_available_kb".to_string(),
-            value: MetricValue::Int(mem_available_kb as u64),
+            value: mem_available_kb.to_string(),
             timestamp: current_unix_time(),
         },
         Metric {
             name: "mem_usage_percent".to_string(),
-            value: MetricValue::Float(mem_usage_percent_rounded),
+            value: mem_usage_percent_rounded.to_string(),
             timestamp: current_unix_time(),
         },
     ];
     if is_first_iteration {
         metrics.push(Metric {
             name: "mem_total_kb".to_string(),
-            value: MetricValue::Int(mem_total_kb as u64),
+            value: mem_total_kb.to_string(),
             timestamp: current_unix_time(),
         });
     }
@@ -108,7 +102,7 @@ pub async fn get_temp_info() -> Result<Vec<Metric>, Box<dyn Error>> {
 
     Ok(Vec::from([Metric {
         name: "cpu_temp_celsius".to_string(),
-        value: MetricValue::Float(temp),
+        value: temp.to_string(),
         timestamp: current_unix_time(),
     }]))
 }
@@ -134,12 +128,12 @@ pub async fn get_disk_info(is_first_iteration: bool) -> Result<Vec<Metric>, Box<
     let mut metrics = vec![
         Metric {
             name: "disk_used_kb".to_string(),
-            value: MetricValue::Int(disk_used_kb),
+            value: disk_used_kb.to_string(),
             timestamp: current_unix_time(),
         },
         Metric {
             name: "disk_used_percent".to_string(),
-            value: MetricValue::Float(disk_used_percent),
+            value: disk_used_percent.to_string(),
             timestamp: current_unix_time(),
         },
     ];
@@ -147,7 +141,7 @@ pub async fn get_disk_info(is_first_iteration: bool) -> Result<Vec<Metric>, Box<
     if is_first_iteration {
         metrics.push(Metric {
             name: "disk_total_kb".to_string(),
-            value: MetricValue::Int(disk_total_kb),
+            value: disk_total_kb.to_string(),
             timestamp: current_unix_time(),
         });
     }
@@ -175,13 +169,13 @@ pub async fn get_network_info() -> Result<Vec<Metric>, Box<dyn Error>> {
 
     let received_metric = Metric {
         name: "throughput_received_kbps".to_string(),
-        value: MetricValue::Int(received_kbps),
+        value: received_kbps.to_string(),
         timestamp: current_unix_time(),
     };
 
     let transmitted_metric = Metric {
         name: "throughput_transmitted_kbps".to_string(),
-        value: MetricValue::Int(transmitted_kbps),
+        value: transmitted_kbps.to_string(),
         timestamp: current_unix_time(),
     };
 
