@@ -24,7 +24,7 @@ type Metric struct {
 }
 
 func InsertMetric(m Metric) (int64, error) {
-	db, err := sql.Open("sqlite", "./my.db")
+	db, err := sql.Open("sqlite", "./server_statistics.db")
 
 	if err != nil {
 		fmt.Println("Error connecting to database:", err)
@@ -46,7 +46,7 @@ func InsertMetric(m Metric) (int64, error) {
 }
 
 func InitDb() {
-	db, err := sql.Open("sqlite", "./my.db")
+	db, err := sql.Open("sqlite", "./server_statistics.db")
 
 	if err != nil {
 		fmt.Println(err)

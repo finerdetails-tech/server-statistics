@@ -1,9 +1,15 @@
 services:
   backend:
     build: ./backend
+    volumes:
+     - db-data:/app
     ports:
       - "8080:8080"
   frontend:
     image: node:20-alpine
     ports:
       - "3000:3000"
+  
+volumes:
+  db-data:
+    name: "server_statistics_db_data"
