@@ -47,10 +47,9 @@ func postMetrics(w http.ResponseWriter, r *http.Request) {
 			Value:     metric.Value,
 		}
 
-		_, err := database.InsertMetric(convertedMetric)
-		if err != nil {
-			fmt.Println("Error inserting metric:", err)
-		}
+		returnedMetric := database.InsertMetric(convertedMetric)
+
+		fmt.Printf("Inserted Metric: %+v\n", returnedMetric)
 	}
 
 	w.WriteHeader(http.StatusOK)

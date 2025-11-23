@@ -1,74 +1,27 @@
 package database
 
 import (
-	"database/sql"
-	"fmt"
-
-	_ "github.com/glebarez/go-sqlite"
+	"github.com/glebarez/sqlite"
+	"gorm.io/gorm"
 )
 
-func createTable(db *sql.DB) (sql.Result, error) {
-	sql := `CREATE TABLE IF NOT EXISTS metrics (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			timestamp DATETIME,
-			name TEXT,
-			value TEXT
-		);`
-	return db.Exec(sql)
-}
+var db, err = gorm.Open(sqlite.Open("./server_statistics.db"), &gorm.Config{})
 
 type Metric struct {
+	gorm.Model
 	Name      string
 	TimeStamp int64
 	Value     string
 }
 
-func InsertMetric(m Metric) (int64, error) {
-	db, err := sql.Open("sqlite", "./server_statistics.db")
-
-	if err != nil {
-		fmt.Println("Error connecting to database:", err)
-		return 0, err
+func InsertMetric(m Metric) Metric {
+	if res := db.Create(&m); res.Error != nil {
+		panic("failed to insert metric, " + res.Error.Error())
 	}
 
-	defer db.Close()
-
-	sql := `INSERT INTO metrics (name, timestamp, value) 
-            VALUES (?, ?, ?);`
-	result, err := db.Exec(sql, m.Name, m.TimeStamp, m.Value)
-
-	if err != nil {
-		fmt.Println("Error inserting metric to database:", err)
-		return 0, err
-	}
-
-	return result.LastInsertId()
+	return m
 }
 
 func InitDb() {
-	db, err := sql.Open("sqlite", "./server_statistics.db")
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	defer db.Close()
-	fmt.Println("Connected to the SQLite database successfully.")
-
-	var sqliteVersion string
-	err = db.QueryRow("select sqlite_version()").Scan(&sqliteVersion)
-
-	if err != nil {
-		fmt.Println("Error querying SQLite version:", err)
-		return
-	}
-
-	fmt.Println("SQLite version:", sqliteVersion)
-
-	_, err = createTable(db)
-	if err != nil {
-		fmt.Println("Error creating table:", err)
-		return
-	}
+	db.AutoMigrate(&Metric{})
 }
