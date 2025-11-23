@@ -1,0 +1,7 @@
+# Used to add pimond to docker-compose.yml for local development
+services:
+  pimond:
+    build: ./pimond
+    env_file: ".env"
+    environment:
+      - SERVER_URL=http://backend:8080/api/metrics

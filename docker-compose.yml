@@ -3,6 +3,7 @@ services:
     build: ./backend
     volumes:
      - db-data:/app
+    env_file: ".env"
     ports:
       - "8080:8080"
   frontend:
