@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var db, err = gorm.Open(sqlite.Open("./server_statistics.db"), &gorm.Config{})
+var db *gorm.DB
 
 type Metric struct {
 	gorm.Model
@@ -22,9 +22,6 @@ func unixTimeMonthAgo() int64 {
 
 func GetMetrics() []Metric {
 	var metrics []Metric
-	if err != nil {
-		panic("failed to connect database, " + err.Error())
-	}
 	if res := db.Where("time_stamp > ?", unixTimeMonthAgo()).Find(&metrics); res.Error != nil {
 		panic("failed to get metrics, " + res.Error.Error())
 	}
@@ -32,9 +29,6 @@ func GetMetrics() []Metric {
 }
 
 func InsertMetric(m Metric) Metric {
-	if err != nil {
-		panic("failed to connect database, " + err.Error())
-	}
 	if res := db.Create(&m); res.Error != nil {
 		panic("failed to insert metric, " + res.Error.Error())
 	}
@@ -43,5 +37,13 @@ func InsertMetric(m Metric) Metric {
 }
 
 func InitDb() {
-	db.AutoMigrate(&Metric{})
+	var err error
+	db, err = gorm.Open(sqlite.Open("./server_statistics.db"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database, " + err.Error())
+	}
+
+	if err := db.AutoMigrate(&Metric{}); err != nil {
+		panic("failed to migrate database, " + err.Error())
+	}
 }
