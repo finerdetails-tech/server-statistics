@@ -25,7 +25,7 @@ func GetMetrics() []Metric {
 	if err != nil {
 		panic("failed to connect database, " + err.Error())
 	}
-	if res := db.Where("timestamp > ?", unixTimeMonthAgo()).Find(&metrics); res.Error != nil {
+	if res := db.Where("time_stamp > ?", unixTimeMonthAgo()).Find(&metrics); res.Error != nil {
 		panic("failed to get metrics, " + res.Error.Error())
 	}
 	return metrics
