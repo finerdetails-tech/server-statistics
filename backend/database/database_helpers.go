@@ -10,7 +10,7 @@ import (
 var db *gorm.DB
 
 type Metric struct {
-	gorm.Model
+	ID        uint `gorm:"primarykey"`
 	Name      string
 	TimeStamp int64
 	Value     string
