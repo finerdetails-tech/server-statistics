@@ -7,11 +7,12 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 )
 
 func getMetrics(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(os.Stdout, "GET Metrics endpoint called")
+	metrics := database.GetMetrics()
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(metrics)
 }
 
 func postMetrics(w http.ResponseWriter, r *http.Request) {
