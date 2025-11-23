@@ -2,7 +2,7 @@ services:
   backend:
     build: ./backend
     volumes:
-     - db-data:/app
+     - db-data:/app/data
     env_file: ".env"
     ports:
       - "8080:8080"
