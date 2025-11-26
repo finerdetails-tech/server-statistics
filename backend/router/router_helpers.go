@@ -9,6 +9,11 @@ import (
 	"net/http"
 )
 
+func ping(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, "pong")
+}
+
 func getAllMetrics(w http.ResponseWriter, r *http.Request) {
 	metrics := database.GetAllMetrics()
 	w.Header().Set("Content-Type", "application/json")
@@ -60,6 +65,7 @@ func InitRouter() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/metrics", getAllMetrics)
 	mux.HandleFunc("POST /api/metrics", postMetrics)
+	mux.HandleFunc("GET /api/ping", ping)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }

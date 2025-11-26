@@ -4,3 +4,6 @@ pimond/target/
 pimond/src/main
 target/
 backend/api
+backend/tmp
+backend/build-errors.log
+backend/server_statistics.db

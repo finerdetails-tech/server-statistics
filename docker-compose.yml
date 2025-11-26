@@ -1,16 +1,22 @@
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
     volumes:
-     - db-data:/app/data
+    - ./backend/:/app
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    
+  pimond:
+    build: ./pimond
     env_file: ".env"
-    ports:
-      - "8080:8080"
-  frontend:
-    image: node:20-alpine
-    ports:
-      - "3000:3000"
-  
-volumes:
-  db-data:
-    name: "server_statistics_db_data"
+    environment:
+      - SERVER_URL=http://backend:8080/api/metrics
+    depends_on:
+      backend:
+        condition: service_healthy
