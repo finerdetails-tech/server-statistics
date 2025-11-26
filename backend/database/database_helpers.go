@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/glebarez/sqlite"
@@ -20,21 +21,34 @@ func unixTimeMonthAgo() int64 {
 	return time.Now().AddDate(0, -1, 0).Unix()
 }
 
-func GetAllMetrics() []Metric {
+func findMetricsBy(condition string) []Metric {
 	var metrics []Metric
-	// Filtering metrics to only ones from within a month
-	if res := db.Where("time_stamp > ?", unixTimeMonthAgo()).Find(&metrics); res.Error != nil {
+	if res := db.Where(condition).Find(&metrics); res.Error != nil {
 		panic("failed to get metrics, " + res.Error.Error())
 	}
 	return metrics
 }
 
-func InsertMetric(m Metric) Metric {
-	if res := db.Create(&m); res.Error != nil {
+func GetAllMetrics() []Metric {
+	condition := fmt.Sprintf("time_stamp > %d", unixTimeMonthAgo())
+	return findMetricsBy(condition)
+}
+
+func InsertMetric(newMetric Metric) Metric {
+	if res := db.Create(&newMetric); res.Error != nil {
 		panic("failed to insert metric, " + res.Error.Error())
 	}
 
-	return m
+	return newMetric
+}
+
+func RemoveExpiredMetrics() {
+	condition := fmt.Sprintf("time_stamp < %d", unixTimeMonthAgo())
+	expiredMetrics := findMetricsBy(condition)
+
+	if res := db.Delete(&expiredMetrics); res.Error != nil {
+		panic("failed to delete old metrics, " + res.Error.Error())
+	}
 }
 
 func InitDb() {
