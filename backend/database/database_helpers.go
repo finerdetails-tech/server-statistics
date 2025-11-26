@@ -20,8 +20,9 @@ func unixTimeMonthAgo() int64 {
 	return time.Now().AddDate(0, -1, 0).Unix()
 }
 
-func GetMetrics() []Metric {
+func GetAllMetrics() []Metric {
 	var metrics []Metric
+	// Filtering metrics to only ones from within a month
 	if res := db.Where("time_stamp > ?", unixTimeMonthAgo()).Find(&metrics); res.Error != nil {
 		panic("failed to get metrics, " + res.Error.Error())
 	}

@@ -9,8 +9,8 @@ import (
 	"net/http"
 )
 
-func getMetrics(w http.ResponseWriter, r *http.Request) {
-	metrics := database.GetMetrics()
+func getAllMetrics(w http.ResponseWriter, r *http.Request) {
+	metrics := database.GetAllMetrics()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(metrics)
 }
@@ -60,7 +60,7 @@ func postMetrics(w http.ResponseWriter, r *http.Request) {
 func InitRouter() {
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /api/metrics", getMetrics)
+	mux.HandleFunc("GET /api/metrics", getAllMetrics)
 	mux.HandleFunc("POST /api/metrics", postMetrics)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
