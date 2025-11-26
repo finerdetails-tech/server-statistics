@@ -16,7 +16,6 @@ func getAllMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func postMetrics(w http.ResponseWriter, r *http.Request) {
-
 	body, err := io.ReadAll(r.Body)
 
 	if err != nil {
@@ -58,7 +57,6 @@ func postMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func InitRouter() {
-
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/metrics", getAllMetrics)
 	mux.HandleFunc("POST /api/metrics", postMetrics)
