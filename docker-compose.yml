@@ -17,6 +17,8 @@ services:
     env_file: ".env"
     environment:
       - SERVER_URL=http://backend:8080/api/metrics
+    volumes:
+    - ./pimond/:/app
     depends_on:
       backend:
         condition: service_healthy
