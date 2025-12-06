@@ -3,20 +3,13 @@ package main
 import (
 	"api/database"
 	"api/router"
-	"time"
+	"log"
+	"net/http"
 )
 
-func cleanupExpiredMetrics() {
-	ticker := time.NewTicker(24 * time.Hour)
-	defer ticker.Stop()
-
-	for range ticker.C {
-		database.RemoveExpiredMetrics()
-	}
-}
-
 func main() {
-	database.InitDb()
-	go cleanupExpiredMetrics()
-	router.InitRouter()
+	database := database.NewDatabase()
+	go database.CleanupExpiredMetrics()
+	router := router.NewRouter(database)
+	log.Fatal(http.ListenAndServe("0.0.0.0:8080", router.Mux))
 }

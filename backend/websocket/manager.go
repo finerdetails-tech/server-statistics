@@ -12,13 +12,15 @@ import (
 type Channel = chan []database.Metric
 
 type Manager struct {
-	clients Clients
+	clients  Clients
+	database *database.Database
 	sync.RWMutex
 }
 
-func newManager() *Manager {
+func NewManager(database *database.Database) *Manager {
 	return &Manager{
-		clients: make(Clients),
+		clients:  make(Clients),
+		database: database,
 	}
 }
 
@@ -27,7 +29,7 @@ var wsUpgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func (manager *Manager) serveWs(w http.ResponseWriter, r *http.Request) {
+func (manager *Manager) serveWebsocket(w http.ResponseWriter, r *http.Request) {
 	log.Println("Initializing new WebSocket connection")
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -37,7 +39,6 @@ func (manager *Manager) serveWs(w http.ResponseWriter, r *http.Request) {
 	wsClient := manager.addClient(conn)
 	wsClient.sendAllMetrics()
 	go wsClient.listenChannel()
-	conn.Close()
 }
 
 func (manager *Manager) addClient(conn *websocket.Conn) *Client {
@@ -62,8 +63,7 @@ func (manager *Manager) BroadcastMetrics(metrics []database.Metric) {
 	}
 }
 
-func Connect(w http.ResponseWriter, r *http.Request) {
-	wsManager := newManager()
-	wsManager.serveWs(w, r)
+func (manager *Manager) Connect(w http.ResponseWriter, r *http.Request) {
+	manager.serveWebsocket(w, r)
 
 }

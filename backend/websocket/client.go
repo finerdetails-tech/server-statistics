@@ -24,7 +24,7 @@ func newClient(conn *websocket.Conn, manager *Manager) *Client {
 }
 
 func (client *Client) sendAllMetrics() {
-	metrics := database.GetAllMetrics()
+	metrics := client.manager.database.GetAllMetrics()
 	client.write(metrics)
 }
 
