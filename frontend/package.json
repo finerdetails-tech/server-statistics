@@ -8,11 +8,16 @@
 		"lint": "eslint . --ext .ts,.tsx"
 	},
 	"dependencies": {
+		"@vx/group": "^0.0.199",
+		"@vx/scale": "^0.0.199",
+		"@vx/shape": "^0.0.199",
+		"d3-array": "^3.2.4",
 		"preact": "^10.26.9"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.1",
 		"@preact/preset-vite": "^2.10.2",
+		"@types/d3-array": "^3.2.2",
 		"eslint": "^9.39.1",
 		"eslint-plugin-react": "^7.37.5",
 		"globals": "^16.5.0",
