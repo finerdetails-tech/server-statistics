@@ -44,6 +44,7 @@ func (router *Router) postMetrics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	metrics := make([]database.Metric, 0, len(rawMetrics))
 	for _, rawMetric := range rawMetrics {
 
 		convertedMetric := database.Metric{
@@ -53,10 +54,9 @@ func (router *Router) postMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 
 		metric := router.database.InsertMetric(convertedMetric)
-
-		router.wsManager.BroadcastMetrics([]database.Metric{metric})
-		fmt.Printf("Inserted Metric: %+v\n", metric)
+		metrics = append(metrics, metric)
 	}
+	router.wsManager.BroadcastMetrics(metrics)
 	w.WriteHeader(http.StatusOK)
 
 }
