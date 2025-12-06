@@ -4,6 +4,7 @@ import (
 	"api/database"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -25,8 +26,13 @@ func NewManager(database *database.Database) *Manager {
 }
 
 var wsUpgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	ReadBufferSize:  0,
+	WriteBufferSize: 65536,
+	CheckOrigin: func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		frontendURL := os.Getenv("FRONTEND_URL")
+		return origin == frontendURL
+	},
 }
 
 func (manager *Manager) serveWebsocket(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +43,7 @@ func (manager *Manager) serveWebsocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	wsClient := manager.addClient(conn)
-	wsClient.sendAllMetrics()
+	go wsClient.sendAllMetrics()
 	go wsClient.listenChannel()
 }
 
@@ -58,8 +64,10 @@ func (manager *Manager) removeClient(c *Client) {
 }
 
 func (manager *Manager) BroadcastMetrics(metrics []database.Metric) {
+	manager.RLock()
+	defer manager.RUnlock()
 	for client := range manager.clients {
-		client.write(metrics)
+		client.channel <- metrics
 	}
 }
 

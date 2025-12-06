@@ -4,6 +4,7 @@ import preactLogo from './assets/preact.svg';
 import './style.css';
 
 export function App() {
+	new WebSocket('ws://localhost:8080/api/metrics');
 	return (
 		<div>
 			<a href="https://preactjs.com" target="_blank">
