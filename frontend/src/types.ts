@@ -16,3 +16,8 @@ export type Metric = {
     TimeStamp: number
     Value: string
 }
+
+export type MetricData = {
+    TimeStamp: number;
+    Value: number;
+};
