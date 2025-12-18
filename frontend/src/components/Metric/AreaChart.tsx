@@ -49,7 +49,7 @@ function AreaChart ({
   yScale: AxisScale<number>
   width: number
   yMax: number
-  margin: {
+  margin?: {
     top: number;
     right: number;
     bottom: number;
@@ -64,7 +64,7 @@ function AreaChart ({
 
   return (
     <Group
-      left={left || margin.left} top={top || margin.top}>
+      left={left || margin?.left || 0} top={top || margin?.top || 0}>
       <AreaClosed<MetricData>
         data={metricData}
         x={(d) => xScale(getDate(d)) || 0}
