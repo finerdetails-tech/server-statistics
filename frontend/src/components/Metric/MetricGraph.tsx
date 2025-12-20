@@ -19,7 +19,7 @@ import type {
 import AreaChart from './AreaChart'
 import { remToPx } from './utils'
 import {
-  getDate, getMetricValue
+  aggregateMetrics, getDate, getMetricValue
 } from './utils'
 
 // Initialize some variables
@@ -49,12 +49,12 @@ function MetricGraph ({
   metrics: Metric[]
 }) {
 
-  const metricData: MetricData[] = metrics.map(({
+  const metricData: MetricData[] = useMemo(() => metrics.map(({
     TimeStamp, Value
   }) => ({
     TimeStamp,
     Value: parseFloat(Value)
-  }))
+  })), [ metrics ])
 
 
   const adjustedMetricWidth = metricWidth - remToPx(2)
@@ -66,21 +66,39 @@ function MetricGraph ({
   if (metricData.length === 0) return null
 
   const displayData = useMemo(() => {
-    if (!brushFilter) return metricData
+    // TODO set default brushfilter and remove this?
+    if (!brushFilter) return aggregateMetrics(metricData, 100)
 
     const {
-      x0, x1, y0, y1
+      x0, x1
     } = brushFilter
-    return metricData.filter((metric) => {
+
+    const filteredMetricData = metricData.filter((metric) => {
       const x = getDate(metric).getTime()
-      const y = getMetricValue(metric)
-      return x > x0 && x < x1 && y > y0 && y < y1
+      return x > x0 && x < x1
     })
+
+    const timeRangeHours = (x1 - x0) / (1000 * 60 * 60)
+
+    let targetPoints: number
+    if (timeRangeHours < 1) {
+      return filteredMetricData // No aggregation for < 1 hour
+    } else if (timeRangeHours < 24) {
+      targetPoints = 10// 5 min average for < 1 day
+    } else if (timeRangeHours < 168) {
+      targetPoints = 120 // 1 hour average for < 1 week
+    } else {
+      targetPoints = 240 // 3 hour average for > 1 week
+    }
+
+    return aggregateMetrics(filteredMetricData, targetPoints)
+
+
   }, [ metricData, brushFilter ])
 
-  const onBrushChange = (domain: Bounds | null) => {
+  const onBrushChange = useMemo(() => (domain: Bounds | null) => {
     setBrushFilter(domain)
-  }
+  }, [ setBrushFilter ])
 
   const topChartBottomMargin = compact
     ? chartSeparation / 2

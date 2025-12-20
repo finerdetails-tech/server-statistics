@@ -1,7 +1,7 @@
 
 import { useScreenSize } from '@visx/responsive'
 import {
-  useMemo, useRef, useState
+  useCallback, useEffect, useMemo, useRef, useState
 } from 'preact/hooks'
 import type { Metric } from 'types'
 import MetricGraph from './MetricGraph'
@@ -34,7 +34,7 @@ function MetricsContainer () {
   const allMetrics = metricsRef.current
 
 
-  const METRIC_CONFIGS = {
+  const METRIC_CONFIGS = useMemo(() => ({
     cpu_temp_celsius: {
       label: "CPU Temperature",
       setValue: setFilteredCpuTemp,
@@ -95,14 +95,13 @@ function MetricsContainer () {
       unit: "kbps",
       value: filteredThroughputTransmitted
     }
-  } as const
+  }), [ filteredCpuTemp, filteredCpuUsagePercent, filteredDiskUsed, filteredDiskUsedPercent, filteredDiskTotal, filteredMemAvailable, filteredMemTotal, filteredMemUsage, filteredThroughputReceived, filteredThroughputTransmitted ])
 
   const {
     height: viewportHeight, width: viewportWidth
   } = useScreenSize()
 
-
-  const handleMetricUpdate = (event: MessageEvent) => {
+  const handleMetricUpdate = useCallback((event: MessageEvent) => {
     const newMetrics = JSON.parse(event.data)
     for (const newMetric of newMetrics) {
       allMetrics[newMetric.Name]?.push(newMetric)
@@ -111,12 +110,25 @@ function MetricsContainer () {
     Object.keys(METRIC_CONFIGS).forEach((metricName) => {
       METRIC_CONFIGS[metricName].setValue(allMetrics[metricName])
     })
-  }
+  }, [ allMetrics, METRIC_CONFIGS ])
 
-  const websocket = useMemo(() => new WebSocket('ws://localhost:8080/api/metrics'), [])
-  websocket.onmessage = (event) => {
-    handleMetricUpdate(event)
-  }
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:8080/api/metrics')
+
+    ws.onmessage = handleMetricUpdate
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error)
+    }
+
+    ws.onopen = () => {
+      console.log('WebSocket connected')
+    }
+
+    return () => {
+      ws.close()
+    }
+  }, [ handleMetricUpdate ])
 
 
   const metricsContainerRef = useRef<HTMLDivElement>(null)
