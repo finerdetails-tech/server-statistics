@@ -2,6 +2,8 @@ package database
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/glebarez/sqlite"
@@ -15,8 +17,13 @@ type Metric struct {
 	Value     string
 }
 
-func unixTimeMonthAgo() int64 {
-	return time.Now().AddDate(0, -1, 0).Unix()
+func retainingTimeUnix() int64 {
+	retainingTimeStr := os.Getenv("METRICS_RETAINING_TIME_DAYS")
+	retainingTime, err := strconv.Atoi(retainingTimeStr)
+	if err != nil {
+		retainingTime = 30
+	}
+	return time.Now().AddDate(0, 0, -retainingTime).Unix()
 }
 
 type Database struct {
@@ -47,7 +54,7 @@ func (database *Database) findMetricsBy(condition string) []Metric {
 }
 
 func (database *Database) GetAllMetrics() []Metric {
-	condition := fmt.Sprintf("time_stamp > %d", unixTimeMonthAgo())
+	condition := fmt.Sprintf("time_stamp > %d", retainingTimeUnix())
 	return database.findMetricsBy(condition)
 }
 
@@ -60,7 +67,7 @@ func (database *Database) InsertMetric(newMetric Metric) Metric {
 }
 
 func (database *Database) RemoveExpiredMetrics() {
-	condition := fmt.Sprintf("time_stamp < %d", unixTimeMonthAgo())
+	condition := fmt.Sprintf("time_stamp < %d", retainingTimeUnix())
 	expiredMetrics := database.findMetricsBy(condition)
 
 	if res := database.orm.Delete(&expiredMetrics); res.Error != nil {
