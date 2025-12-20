@@ -42,3 +42,16 @@ export const aggregateMetrics = (
 
   return buckets
 }
+
+export const removeUntilConditionIsNoLongerMet = (
+  array: any[],
+  condition: (item: any) => boolean
+) => {
+  let startIndex = 0
+
+  while (startIndex < array.length && condition(array[startIndex])) {
+    startIndex++
+  }
+
+  return array.slice(startIndex)
+}

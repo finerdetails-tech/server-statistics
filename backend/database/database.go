@@ -18,7 +18,7 @@ type Metric struct {
 }
 
 func retainingTimeUnix() int64 {
-	retainingTimeStr := os.Getenv("METRICS_RETAINING_TIME_DAYS")
+	retainingTimeStr := os.Getenv("VISIBLE_METRICS_RETAINING_TIME_DAYS")
 	retainingTime, err := strconv.Atoi(retainingTimeStr)
 	if err != nil {
 		retainingTime = 30

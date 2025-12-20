@@ -5,7 +5,11 @@ import {
 } from 'preact/hooks'
 import type { Metric } from 'types'
 import MetricGraph from './MetricGraph'
-import { listCurrentAndParentElements } from './utils'
+import {
+  listCurrentAndParentElements, removeUntilConditionIsNoLongerMet
+} from './utils'
+
+const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
 
 function MetricsContainer () {
   const [ filteredThroughputReceived, setFilteredThroughputReceived ] = useState<Metric[]>([])
@@ -36,60 +40,70 @@ function MetricsContainer () {
 
   const METRIC_CONFIGS = useMemo(() => ({
     cpu_temp_celsius: {
+      isLiveUpdated: true,
       label: "CPU Temperature",
       setValue: setFilteredCpuTemp,
       unit: "°C",
       value: filteredCpuTemp
     },
     cpu_usage_percent: {
+      isLiveUpdated: true,
       label: "CPU Usage",
       setValue: setFilteredCpuUsagePercent,
       unit: "%",
       value: filteredCpuUsagePercent
     },
     disk_used_kb: {
+      isLiveUpdated: true,
       label: "Disk Used",
       setValue: setFilteredDiskUsed,
       unit: "KB",
       value: filteredDiskUsed
     },
     disk_used_percent: {
+      isLiveUpdated: true,
       label: "Disk Usage",
       setValue: setFilteredDiskUsedPercent,
       unit: "%",
       value: filteredDiskUsedPercent
     },
     disk_used_total: {
+      isLiveUpdated: false,
       label: "Total Disk",
       setValue: setFilteredDiskTotal,
       unit: "KB",
       value: filteredDiskTotal
     },
     mem_available_kb: {
+      isLiveUpdated: true,
       label: "Memory Available",
       setValue: setFilteredMemAvailable,
       unit: "KB",
       value: filteredMemAvailable
     },
     mem_total_kb: {
+      isLiveUpdated: true,
       label: "Total Memory",
       setValue: setFilteredMemTotal,
       unit: "KB",
       value: filteredMemTotal
     },
     mem_usage_percent: {
+      isLiveUpdated: true,
       label: "Memory Usage",
       setValue: setFilteredMemUsage,
       unit: "%",
       value: filteredMemUsage
     },
     throughput_received_kbps: {
+      isLiveUpdated: true,
       label: "Throughput Received",
       setValue: setFilteredThroughputReceived,
       unit: "kbps",
       value: filteredThroughputReceived
     },
     throughput_transmitted_kbps: {
+      isLiveUpdated: true,
       label: "Throughput Transmitted",
       setValue: setFilteredThroughputTransmitted,
       unit: "kbps",
@@ -103,11 +117,14 @@ function MetricsContainer () {
 
   const handleMetricUpdate = useCallback((event: MessageEvent) => {
     const newMetrics = JSON.parse(event.data)
+    const cutoffTimestamp = Math.floor(Date.now() / 1000) - (METRICS_RETAINING_TIME_DAYS * 24 * 60 * 60)
     for (const newMetric of newMetrics) {
       allMetrics[newMetric.Name]?.push(newMetric)
     }
 
     Object.keys(METRIC_CONFIGS).forEach((metricName) => {
+      // Removing old metrics beyond retaining time
+      removeUntilConditionIsNoLongerMet(allMetrics[metricName], (metric: Metric) => metric.TimeStamp < cutoffTimestamp)
       METRIC_CONFIGS[metricName].setValue(allMetrics[metricName])
     })
   }, [ allMetrics, METRIC_CONFIGS ])
