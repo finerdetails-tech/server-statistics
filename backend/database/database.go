@@ -40,6 +40,8 @@ func NewDatabase() *Database {
 		panic("failed to migrate database, " + err.Error())
 	}
 
+	orm.Exec("CREATE INDEX IF NOT EXISTS idx_name_timestamp ON metrics(name, time_stamp)")
+
 	return &Database{
 		orm: orm,
 	}
@@ -53,9 +55,18 @@ func (database *Database) findMetricsBy(condition string) []Metric {
 	return metrics
 }
 
-func (database *Database) GetAllMetrics() []Metric {
+func (database *Database) GetAllMetrics() map[string][]Metric {
 	condition := fmt.Sprintf("time_stamp > %d", retainingTimeUnix())
-	return database.findMetricsBy(condition)
+	var metrics []Metric
+
+	database.orm.Where(condition).Order("name ASC, time_stamp ASC").Find(&metrics)
+
+	grouped := make(map[string][]Metric)
+	for _, metric := range metrics {
+		grouped[metric.Name] = append(grouped[metric.Name], metric)
+	}
+
+	return grouped
 }
 
 func (database *Database) InsertMetric(newMetric Metric) Metric {

@@ -43,8 +43,8 @@ func (router *Router) postMetrics(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
 		return
 	}
+	metricsMap := map[string][]database.Metric{}
 
-	metrics := make([]database.Metric, 0, len(rawMetrics))
 	for _, rawMetric := range rawMetrics {
 
 		convertedMetric := database.Metric{
@@ -54,9 +54,9 @@ func (router *Router) postMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 
 		metric := router.database.InsertMetric(convertedMetric)
-		metrics = append(metrics, metric)
+		metricsMap[metric.Name] = append(metricsMap[metric.Name], metric)
 	}
-	router.wsManager.BroadcastMetrics(metrics)
+	router.wsManager.BroadcastMetrics(metricsMap)
 	w.WriteHeader(http.StatusOK)
 
 }

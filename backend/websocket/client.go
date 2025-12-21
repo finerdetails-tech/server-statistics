@@ -42,7 +42,7 @@ func (client *Client) destroyClient() {
 	log.Println("WebSocket client removed")
 }
 
-func (client *Client) write(metrics []database.Metric) {
+func (client *Client) write(metrics map[string][]database.Metric) {
 	err := client.conn.WriteJSON(metrics)
 	if err != nil {
 		log.Println("Error writing to WebSocket:", err)

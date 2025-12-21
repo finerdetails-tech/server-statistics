@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Channel = chan []database.Metric
+type Channel = chan map[string][]database.Metric
 
 type Manager struct {
 	clients  Clients
@@ -27,7 +27,7 @@ func NewManager(database *database.Database) *Manager {
 
 var wsUpgrader = websocket.Upgrader{
 	ReadBufferSize:  0,
-	WriteBufferSize: 65536,
+	WriteBufferSize: 524288,
 	CheckOrigin: func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
 		frontendURL := os.Getenv("FRONTEND_URL")
@@ -63,7 +63,7 @@ func (manager *Manager) removeClient(c *Client) {
 	delete(manager.clients, c)
 }
 
-func (manager *Manager) BroadcastMetrics(metrics []database.Metric) {
+func (manager *Manager) BroadcastMetrics(metrics map[string][]database.Metric) {
 	manager.RLock()
 	defer manager.RUnlock()
 	for client := range manager.clients {

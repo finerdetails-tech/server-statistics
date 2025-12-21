@@ -23,24 +23,9 @@ function MetricsContainer () {
   const [ filteredDiskTotal, setFilteredDiskTotal ] = useState<Metric[]>([])
   const [ filteredDiskUsedPercent, setFilteredDiskUsedPercent ] = useState<Metric[]>([])
 
-  const metricsRef = useRef({
-    cpu_temp_celsius: [] as Metric[],
-    cpu_usage_percent: [] as Metric[],
-    disk_used_kb: [] as Metric[],
-    disk_used_percent: [] as Metric[],
-    disk_used_total: [] as Metric[],
-    mem_available_kb: [] as Metric[],
-    mem_total_kb: [] as Metric[],
-    mem_usage_percent: [] as Metric[],
-    throughput_received_kbps: [] as Metric[],
-    throughput_transmitted_kbps: [] as Metric[]
-  })
-  const allMetrics = metricsRef.current
-
-
   const METRIC_CONFIGS = useMemo(() => ({
     cpu_temp_celsius: {
-      isLiveUpdated: true,
+      isLiveUpdated: true, // whether or not webhooks update data after init or not
       label: "CPU Temperature",
       setValue: setFilteredCpuTemp,
       unit: "°C",
@@ -52,6 +37,13 @@ function MetricsContainer () {
       setValue: setFilteredCpuUsagePercent,
       unit: "%",
       value: filteredCpuUsagePercent
+    },
+    disk_total_kb: {
+      isLiveUpdated: false,
+      label: "Total Disk",
+      setValue: setFilteredDiskTotal,
+      unit: "KB",
+      value: filteredDiskTotal
     },
     disk_used_kb: {
       isLiveUpdated: true,
@@ -66,13 +58,6 @@ function MetricsContainer () {
       setValue: setFilteredDiskUsedPercent,
       unit: "%",
       value: filteredDiskUsedPercent
-    },
-    disk_used_total: {
-      isLiveUpdated: false,
-      label: "Total Disk",
-      setValue: setFilteredDiskTotal,
-      unit: "KB",
-      value: filteredDiskTotal
     },
     mem_available_kb: {
       isLiveUpdated: true,
@@ -116,18 +101,22 @@ function MetricsContainer () {
   } = useScreenSize()
 
   const handleMetricUpdate = useCallback((event: MessageEvent) => {
-    const newMetrics = JSON.parse(event.data)
+    const newMetrics = JSON.parse(event.data) as { [key: string]: Metric[] }
     const cutoffTimestamp = Math.floor(Date.now() / 1000) - (METRICS_RETAINING_TIME_DAYS * 24 * 60 * 60)
-    for (const newMetric of newMetrics) {
-      allMetrics[newMetric.Name]?.push(newMetric)
-    }
+    const metricNames = Object.keys(newMetrics)
 
-    Object.keys(METRIC_CONFIGS).forEach((metricName) => {
-      // Removing old metrics beyond retaining time
-      removeUntilConditionIsNoLongerMet(allMetrics[metricName], (metric: Metric) => metric.TimeStamp < cutoffTimestamp)
-      METRIC_CONFIGS[metricName].setValue(allMetrics[metricName])
-    })
-  }, [ allMetrics, METRIC_CONFIGS ])
+    for (const metricName of metricNames) {
+      METRIC_CONFIGS[metricName].setValue((oldMetrics: Metric[]) => {
+        const isNotLiveUpdated = !METRIC_CONFIGS[metricName].isLiveUpdated
+        if (isNotLiveUpdated) {
+          return newMetrics[metricName]
+        }
+        // Removing old metrics beyond retaining time
+        const cleanedOldMetrics = removeUntilConditionIsNoLongerMet(oldMetrics, (metric: Metric) => metric.TimeStamp < cutoffTimestamp)
+        return [ ...cleanedOldMetrics, ...newMetrics[metricName] ]
+      })
+    }
+  }, [])
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8080/api/metrics')
@@ -145,7 +134,7 @@ function MetricsContainer () {
     return () => {
       ws.close()
     }
-  }, [ handleMetricUpdate ])
+  }, [])
 
 
   const metricsContainerRef = useRef<HTMLDivElement>(null)
