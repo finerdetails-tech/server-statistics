@@ -11,7 +11,7 @@ import {
   extent, max
 } from '@visx/vendor/d3-array'
 import {
-  useMemo, useRef, useState
+  useCallback, useMemo, useRef, useState
 } from 'preact/hooks'
 import type {
   Metric, MetricData
@@ -56,8 +56,11 @@ function MetricGraph ({
     Value: parseFloat(Value)
   })), [ metrics ])
 
+  const brushData = useMemo(() => aggregateMetrics(metricData, 240), [ metricData ])
 
-  const adjustedMetricWidth = metricWidth - remToPx(2)
+  const adjustedMetricWidth = metricWidth
+    ? metricWidth - remToPx(2)
+    : 0
   const adjustedMetricHeight = metricHeight - remToPx(2)
 
   const brushRef = useRef<BaseBrush | null>(null)
@@ -96,9 +99,9 @@ function MetricGraph ({
 
   }, [ metricData, brushFilter ])
 
-  const onBrushChange = useMemo(() => (domain: Bounds | null) => {
+  const onBrushChange = useCallback((domain: Bounds | null) => {
     setBrushFilter(domain)
-  }, [ setBrushFilter ])
+  }, [])
 
   const topChartBottomMargin = compact
     ? chartSeparation / 2
@@ -120,7 +123,7 @@ function MetricGraph ({
     }),
     [ xMax, displayData ]
   )
-  const stockScale = useMemo(
+  const metricScale = useMemo(
     () => scaleLinear<number>({
       domain: [ 0, max(displayData, getMetricValue) || 0 ],
       nice: true,
@@ -133,27 +136,31 @@ function MetricGraph ({
       domain: extent(metricData, getDate) as [Date, Date],
       range: [ 0, xBrushMax ]
     }),
-    [ xBrushMax ]
+    [ xBrushMax, metricData ]
   )
-  const brushStockScale = useMemo(
+  const brushMetricScale = useMemo(
     () => scaleLinear({
       domain: [ 0, max(metricData, getMetricValue) || 0 ],
       nice: true,
       range: [ yBrushMax, 0 ]
     }),
-    [ yBrushMax ]
+    [ yBrushMax, metricData ]
   )
 
+  const hasInitializedBrush = useRef(false)
   const initialBrushPosition = useMemo(
     () => {
-      const latestMetricDate = getDate(metricData.at(-1))
+      if (metricData.length === 0 || hasInitializedBrush.current) return undefined
+
+      hasInitializedBrush.current = true
+      const latestMetricDate = getDate(metricData[metricData.length - 1])
       const dayBeforeLatestMetricDate = new Date(latestMetricDate.getTime() - 1000 * 60 * 60 * 24)
+
       return ({
-        end: { x: brushDateScale(getDate(metricData.at(-1))) },
+        end: { x: brushDateScale(latestMetricDate) },
         start: { x: brushDateScale(dayBeforeLatestMetricDate) }
       })
-    },
-    [ brushDateScale ]
+    }, []
   )
 
 
@@ -170,22 +177,22 @@ function MetricGraph ({
           width={adjustedMetricWidth}
           yMax={yMax}
           xScale={dateScale}
-          yScale={stockScale}
+          yScale={metricScale}
         />
         <AreaChart
           hideBottomAxis
           hideLeftAxis
-          metricData={metricData}
+          metricData={brushData}
           width={adjustedMetricWidth}
           yMax={yBrushMax}
           xScale={brushDateScale}
-          yScale={brushStockScale}
+          yScale={brushMetricScale}
           margin={brushMargin}
           top={topChartHeight + topChartBottomMargin}
         >
           <Brush
             xScale={brushDateScale}
-            yScale={brushStockScale}
+            yScale={brushMetricScale}
             width={xBrushMax}
             height={yBrushMax}
             margin={brushMargin}

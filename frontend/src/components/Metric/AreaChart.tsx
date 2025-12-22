@@ -6,6 +6,7 @@ import { curveMonotoneX } from '@visx/curve'
 import { Group } from '@visx/group'
 import { AreaClosed } from '@visx/shape'
 import { timeFormat } from '@visx/vendor/d3-time-format'
+import { useCallback } from 'preact/compat'
 import type { MetricData } from 'types'
 import {
   getDate, getMetricValue
@@ -62,13 +63,16 @@ function AreaChart ({
   children?: React.ReactNode
 }) {
 
+  const xAccessor = useCallback((d: MetricData) => xScale(getDate(d)) || 0, [ xScale ])
+  const yAccessor = useCallback((d: MetricData) => yScale(getMetricValue(d)) || 0, [ yScale ])
+
   return (
     <Group
       left={left || margin?.left || 0} top={top || margin?.top || 0}>
       <AreaClosed<MetricData>
         data={metricData}
-        x={(d) => xScale(getDate(d)) || 0}
-        y={(d) => yScale(getMetricValue(d)) || 0}
+        x={xAccessor}
+        y={yAccessor}
         yScale={yScale}
         strokeWidth={1}
         stroke={accentColor}
