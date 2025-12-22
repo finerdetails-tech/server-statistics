@@ -50,7 +50,7 @@ async fn send_http_request(metrics: Vec<Metric>) -> Result<(), Box<dyn Error>> {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let interval_seconds = get_env_variable("METRICS_SENDING_INTERVAL_SECONDS")
+    let interval_seconds = get_env_variable("VISIBLE_METRICS_SENDING_INTERVAL_SECONDS")
         .ok()
         .and_then(|s| s.parse::<u64>().ok())
         .unwrap_or(30);

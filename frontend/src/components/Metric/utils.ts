@@ -24,15 +24,32 @@ export const remToPx = (rem: number): number => {
 }
 
 export const aggregateMetrics = (
-  metrics: MetricData[],
-  bucketSize: number
+  metrics: MetricData[]
 ): MetricData[] => {
+  const VISIBLE_METRICS_SENDING_INTERVAL_SECONDS: number = Number(import.meta.env.VISIBLE_METRICS_SENDING_INTERVAL_SECONDS) || 30
+  const metricsLength = metrics.length
+  const metricsTimeSpanSeconds = metricsLength * VISIBLE_METRICS_SENDING_INTERVAL_SECONDS
+  const a = 2.44 * Math.pow(10, -10)
+  const b = 6.26 * Math.pow(10, -5)
+  const c = 0.773
+  /*
+  formula matches the following points:
+  (1 hour, 1 bucket)
+  (1 day, 8 buckets)
+  (1 week, 128 buckets)
+  capped at min 1 and max 256 buckets
+  */
+  const formula = (x: number) => a * Math.pow(x, 2) + b * x + c
+  const bucketSize = Math.ceil(Math.min(formula(metricsTimeSpanSeconds), 256))
+
+
   const buckets: MetricData[] = []
 
-  for (let i = 0; i < metrics.length; i += bucketSize) {
+  for (let i = 0; i < metricsLength; i += bucketSize) {
     const bucket = metrics.slice(i, i + bucketSize)
     const avgValue = bucket.reduce((sum, m) => sum + m.Value, 0) / bucket.length
     const midTimestamp = bucket[Math.floor(bucket.length / 2)].TimeStamp
+
 
     buckets.push({
       TimeStamp: midTimestamp,

@@ -22,7 +22,6 @@ import {
   aggregateMetrics, getDate, getMetricValue
 } from './utils'
 
-// Initialize some variables
 const brushMargin = {
   bottom: 15,
   left: 0,
@@ -56,7 +55,7 @@ function MetricGraph ({
     Value: parseFloat(Value)
   })), [ metrics ])
 
-  const brushData = useMemo(() => aggregateMetrics(metricData, 240), [ metricData ])
+  const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
 
   const adjustedMetricWidth = metricWidth
     ? metricWidth - remToPx(2)
@@ -70,7 +69,7 @@ function MetricGraph ({
 
   const displayData = useMemo(() => {
     // TODO set default brushfilter and remove this?
-    if (!brushFilter) return aggregateMetrics(metricData, 100)
+    if (!brushFilter) return aggregateMetrics(metricData)
 
     const {
       x0, x1
@@ -81,22 +80,7 @@ function MetricGraph ({
       return x > x0 && x < x1
     })
 
-    const timeRangeHours = (x1 - x0) / (1000 * 60 * 60)
-
-    let targetPoints: number
-    if (timeRangeHours < 1) {
-      return filteredMetricData // No aggregation for < 1 hour
-    } else if (timeRangeHours < 24) {
-      targetPoints = 10// 5 min average for < 1 day
-    } else if (timeRangeHours < 168) {
-      targetPoints = 120 // 1 hour average for < 1 week
-    } else {
-      targetPoints = 240 // 3 hour average for > 1 week
-    }
-
-    return aggregateMetrics(filteredMetricData, targetPoints)
-
-
+    return aggregateMetrics(filteredMetricData)
   }, [ metricData, brushFilter ])
 
   const onBrushChange = useCallback((domain: Bounds | null) => {
