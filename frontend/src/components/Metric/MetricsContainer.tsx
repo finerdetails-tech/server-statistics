@@ -1,13 +1,12 @@
 
-import { useScreenSize } from '@visx/responsive'
+
 import {
-  useCallback, useEffect, useMemo, useRef, useState
+  useCallback, useEffect, useMemo, useState
 } from 'preact/hooks'
 import type { Metric } from 'types'
+import useContainerDimensions from '../../hooks/useContainerDimensions'
+import {removeUntilConditionIsNoLongerMet} from '../../utils'
 import MetricGraph from './MetricGraph'
-import {
-  listCurrentAndParentElements, removeUntilConditionIsNoLongerMet
-} from './utils'
 
 const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
 
@@ -22,6 +21,11 @@ function MetricsContainer () {
   const [ filteredDiskUsed, setFilteredDiskUsed ] = useState<Metric[]>([])
   const [ filteredDiskTotal, setFilteredDiskTotal ] = useState<Metric[]>([])
   const [ filteredDiskUsedPercent, setFilteredDiskUsedPercent ] = useState<Metric[]>([])
+
+
+  const {
+    isLandscape, metricHeight, metricsContainerRef, metricWidth
+  } = useContainerDimensions()
 
   const METRIC_CONFIGS = useMemo(() => ({
     cpu_temp_celsius: {
@@ -96,9 +100,6 @@ function MetricsContainer () {
     }
   }), [ filteredCpuTemp, filteredCpuUsagePercent, filteredDiskUsed, filteredDiskUsedPercent, filteredDiskTotal, filteredMemAvailable, filteredMemTotal, filteredMemUsage, filteredThroughputReceived, filteredThroughputTransmitted ])
 
-  const {
-    height: viewportHeight, width: viewportWidth
-  } = useScreenSize()
 
   const handleMetricUpdate = useCallback((event: MessageEvent) => {
     const newMetrics = JSON.parse(event.data) as { [key: string]: Metric[] }
@@ -137,55 +138,6 @@ function MetricsContainer () {
   }, [])
 
 
-  const metricsContainerRef = useRef<HTMLDivElement>(null)
-
-  const {
-    parentHeightStyling, parentWidthStyling
-  } = useMemo(() => listCurrentAndParentElements(metricsContainerRef.current).reduce((acc, element) => {
-    if (!element) return acc
-    const heightProperties = [ 'marginTop', 'marginBottom', 'paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth' ] as const
-    const widthProperties = [ 'marginLeft', 'marginRight', 'paddingLeft', 'paddingRight', 'borderLeftWidth', 'borderRightWidth' ] as const
-    heightProperties.forEach((prop) => {
-      const value = parseFloat(getComputedStyle(element)[prop]) || 0
-      acc.parentHeightStyling += value
-    })
-    widthProperties.forEach((prop) => {
-      const value = parseFloat(getComputedStyle(element)[prop]) || 0
-      acc.parentWidthStyling += value
-    })
-    return acc
-  }, {
-    parentHeightStyling: 0,
-    parentWidthStyling: 0
-  }), [ metricsContainerRef.current ])
-
-  const isLandscape = useMemo(() => {
-    return viewportWidth > viewportHeight
-  }, [ viewportWidth, viewportHeight ])
-
-  const {
-    metricHeight, metricWidth
-  } = useMemo(() => {
-
-
-    const metricWidth = Math.max(viewportWidth - parentWidthStyling, 100)
-
-    const heightToWidthRatio = 2 / 3
-    const availableHeight = viewportHeight - parentHeightStyling
-    const targetHeight = metricWidth * heightToWidthRatio
-    const fittingMetricsCount = Math.max(Math.floor(availableHeight / targetHeight), 1)
-    const leftOverHeight = availableHeight % targetHeight
-    const adjustedHeight = targetHeight + (leftOverHeight / (fittingMetricsCount))
-    const metricHeight = adjustedHeight
-
-
-    return {
-      metricHeight,
-      metricWidth
-    }
-  }, [ isLandscape, viewportHeight, viewportWidth ])
-
-
   return (
     <div
       ref={metricsContainerRef}
@@ -196,6 +148,9 @@ function MetricsContainer () {
         flexDirection: isLandscape
           ? 'row'
           : 'column',
+        gap: '1rem',
+        height: '100%',
+        padding: '1rem',
         width: '100%'
       }}>
       {Object.entries(METRIC_CONFIGS).map(([ name, config ]) => (
@@ -204,7 +159,6 @@ function MetricsContainer () {
           metricHeight={metricHeight}
           metricWidth={metricWidth}
           metrics={config.value}
-          // label={config.label}
         />
       ))}
     </div>

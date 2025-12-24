@@ -10,7 +10,7 @@ import { useCallback } from 'preact/compat'
 import type { MetricData } from 'types'
 import {
   getDate, getMetricValue
-} from './utils'
+} from '../../utils'
 
 const axisColor = '#fff'
 const axisBottomTickLabelProps = {
@@ -34,8 +34,6 @@ const format24Hour = timeFormat('%H:%M')
 const accentColor = '#bbff00'
 function AreaChart ({
   children,
-  hideBottomAxis = false,
-  hideLeftAxis = false,
   left,
   margin,
   metricData,
@@ -79,30 +77,27 @@ function AreaChart ({
         fill="transparent"
         curve={curveMonotoneX}
       />
-      {!hideBottomAxis && (
-        <AxisBottom
-          top={yMax}
-          scale={xScale}
-          numTicks={
-            width > 520
-              ? 10
-              : 5
-          }
-          stroke={axisColor}
-          tickStroke={axisColor}
-          tickLabelProps={axisBottomTickLabelProps}
-          tickFormat={format24Hour}
-        />
-      )}
-      {!hideLeftAxis && (
-        <AxisLeft
-          scale={yScale}
-          numTicks={5}
-          stroke={axisColor}
-          tickStroke={axisColor}
-          tickLabelProps={axisLeftTickLabelProps}
-        />
-      )}
+      <AxisBottom
+        top={yMax}
+        scale={xScale}
+        numTicks={
+          width > 520
+            ? 10
+            : 5
+        }
+        stroke={axisColor}
+        tickStroke={axisColor}
+        tickLabelProps={axisBottomTickLabelProps}
+        tickFormat={format24Hour}
+      />
+
+      <AxisLeft
+        scale={yScale}
+        numTicks={5}
+        stroke={axisColor}
+        tickStroke={axisColor}
+        tickLabelProps={axisLeftTickLabelProps}
+      />
       {children}
     </Group>
   )

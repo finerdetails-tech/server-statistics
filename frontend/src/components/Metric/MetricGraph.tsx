@@ -16,11 +16,11 @@ import {
 import type {
   Metric, MetricData
 } from 'types'
-import AreaChart from './AreaChart'
-import { remToPx } from './utils'
+import { remToPx } from '../../utils'
 import {
   aggregateMetrics, getDate, getMetricValue
-} from './utils'
+} from '../../utils'
+import AreaChart from './AreaChart'
 
 const brushMargin = {
   bottom: 15,
@@ -28,7 +28,7 @@ const brushMargin = {
   right: 0,
   top: 10
 }
-const chartSeparation = 30
+
 const GRADIENT_ID = 'brush_gradient'
 export const accentColor = '#bbff00ff'
 const selectedBrushStyle = {
@@ -37,14 +37,12 @@ const selectedBrushStyle = {
 }
 
 function MetricGraph ({
-  compact = false,
   metricHeight,
   metrics,
   metricWidth
 }: {
   metricHeight: number
-  metricWidth?: number
-  compact?: boolean
+  metricWidth: number
   metrics: Metric[]
 }) {
 
@@ -57,10 +55,20 @@ function MetricGraph ({
 
   const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
 
-  const adjustedMetricWidth = metricWidth
-    ? metricWidth - remToPx(2)
-    : 0
-  const adjustedMetricHeight = metricHeight - remToPx(2)
+  const topChartBottomMargin = remToPx(4)
+  const surroundingMargin = remToPx(1)
+
+  const adjustedMetricHeight = 0.8 * metricHeight - 2 * surroundingMargin
+  const adjustedMetricWidth = metricWidth - 2 * surroundingMargin
+
+  const topChartHeight = adjustedMetricHeight - topChartBottomMargin
+  const bottomChartHeight = adjustedMetricHeight - topChartHeight
+
+  // bounds
+  const xMax = Math.max(adjustedMetricWidth, 0)
+  const yMax = Math.max(topChartHeight, 0)
+  const xBrushMax = Math.max(adjustedMetricWidth, 0)
+  const yBrushMax = Math.max(bottomChartHeight, 0)
 
   const brushRef = useRef<BaseBrush | null>(null)
   const [ brushFilter, setBrushFilter ] = useState<Bounds | null>(null)
@@ -87,17 +95,6 @@ function MetricGraph ({
     setBrushFilter(domain)
   }, [])
 
-  const topChartBottomMargin = compact
-    ? chartSeparation / 2
-    : chartSeparation + 10
-  const topChartHeight = 0.8 * adjustedMetricHeight - topChartBottomMargin
-  const bottomChartHeight = adjustedMetricHeight - topChartHeight - chartSeparation
-
-  // bounds
-  const xMax = Math.max(adjustedMetricWidth, 0)
-  const yMax = Math.max(topChartHeight, 0)
-  const xBrushMax = Math.max(adjustedMetricWidth, 0)
-  const yBrushMax = Math.max(bottomChartHeight, 0)
 
   // scales
   const dateScale = useMemo(
@@ -150,13 +147,17 @@ function MetricGraph ({
 
   return (
     <div
-      style={{ margin: '1rem' }}>
+      style={{
+        height: metricHeight,
+        margin: surroundingMargin,
+        width: adjustedMetricWidth
+      }}>
       <svg
-        width={adjustedMetricWidth} height={adjustedMetricHeight}>
+        display="block"
+        width={adjustedMetricWidth} height={metricHeight}>
         <rect
           x={0} y={0} width={adjustedMetricWidth} height={adjustedMetricHeight} fill={`url(#${GRADIENT_ID})`} rx={14} />
         <AreaChart
-          hideBottomAxis={compact}
           metricData={displayData}
           width={adjustedMetricWidth}
           yMax={yMax}
@@ -189,6 +190,7 @@ function MetricGraph ({
             selectedBoxStyle={selectedBrushStyle}
             useWindowMoveEvents
             renderBrushHandle={(props) => (<BrushHandle
+              height={yBrushMax}
               {...props} />)}
           />
         </AreaChart>
