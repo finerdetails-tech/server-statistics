@@ -142,7 +142,7 @@ function MetricsContainer () {
     <div
       ref={metricsContainerRef}
       style={{
-        backgroundColor: '#222831',
+        backgroundColor: '#0A0A0C',
         display: 'flex',
         flex: 1,
         flexDirection: isLandscape

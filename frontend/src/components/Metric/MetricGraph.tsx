@@ -32,8 +32,8 @@ const brushMargin = {
 const GRADIENT_ID = 'brush_gradient'
 export const accentColor = '#bbff00ff'
 const selectedBrushStyle = {
-  fill: 'blue',
-  stroke: 'white'
+  fill: '#1E1E22',
+  stroke: '#F5F7F2'
 }
 
 function MetricGraph ({

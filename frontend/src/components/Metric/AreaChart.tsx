@@ -12,7 +12,7 @@ import {
   getDate, getMetricValue
 } from '../../utils'
 
-const axisColor = '#fff'
+const axisColor = '#F5F7F2'
 const axisBottomTickLabelProps = {
   fill: axisColor,
   fontFamily: 'Arial',
@@ -72,7 +72,7 @@ function AreaChart ({
         x={xAccessor}
         y={yAccessor}
         yScale={yScale}
-        strokeWidth={1}
+        strokeWidth={2}
         stroke={accentColor}
         fill="transparent"
         curve={curveMonotoneX}
