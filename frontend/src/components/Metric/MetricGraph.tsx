@@ -1,9 +1,6 @@
 
-import { Brush } from '@visx/brush'
 import type BaseBrush from '@visx/brush/lib/BaseBrush'
-import type { BrushHandleRenderProps } from '@visx/brush/lib/BrushHandle'
 import type { Bounds } from '@visx/brush/lib/types'
-import { Group } from '@visx/group'
 import {
   scaleLinear, scaleTime
 } from '@visx/scale'
@@ -21,6 +18,7 @@ import {
   aggregateMetrics, getDate, getMetricValue
 } from '../../utils'
 import AreaChart from './AreaChart'
+import CustomBrush from './CustomBrush'
 
 const brushMargin = {
   bottom: 15,
@@ -31,10 +29,7 @@ const brushMargin = {
 
 const GRADIENT_ID = 'brush_gradient'
 export const accentColor = '#bbff00ff'
-const selectedBrushStyle = {
-  fill: '#1E1E22',
-  stroke: '#F5F7F2'
-}
+
 
 function MetricGraph ({
   metricHeight,
@@ -43,8 +38,9 @@ function MetricGraph ({
 }: {
   metricHeight: number
   metricWidth: number
-  metrics: Metric[]
+  metrics: Metric[],
 }) {
+
 
   const metricData: MetricData[] = useMemo(() => metrics.map(({
     TimeStamp, Value
@@ -144,7 +140,6 @@ function MetricGraph ({
     }, []
   )
 
-
   return (
     <div
       style={{
@@ -163,6 +158,7 @@ function MetricGraph ({
           yMax={yMax}
           xScale={dateScale}
           yScale={metricScale}
+          strokeColor={accentColor}
         />
         <AreaChart
           hideBottomAxis
@@ -174,50 +170,21 @@ function MetricGraph ({
           yScale={brushMetricScale}
           margin={brushMargin}
           top={topChartHeight + topChartBottomMargin}
+          strokeColor="#C3C3C3"
         >
-          <Brush
+          <CustomBrush
             xScale={brushDateScale}
             yScale={brushMetricScale}
             width={xBrushMax}
             height={yBrushMax}
             margin={brushMargin}
-            handleSize={8}
             innerRef={brushRef}
-            resizeTriggerAreas={[ 'left', 'right' ]}
-            brushDirection="horizontal"
             initialBrushPosition={initialBrushPosition}
             onChange={onBrushChange}
-            selectedBoxStyle={selectedBrushStyle}
-            useWindowMoveEvents
-            renderBrushHandle={(props) => (<BrushHandle
-              height={yBrushMax}
-              {...props} />)}
           />
         </AreaChart>
       </svg>
     </div>
-  )
-}
-// We need to manually offset the handles for them to be rendered at the right position
-function BrushHandle ({
-  height, isBrushActive, x
-}: BrushHandleRenderProps) {
-  const pathWidth = 8
-  const pathHeight = 15
-  if (!isBrushActive) {
-    return null
-  }
-  return (
-    <Group
-      left={x + pathWidth / 2} top={(height - pathHeight) / 2}>
-      <path
-        fill="#f2f2f2"
-        d="M -4.5 0.5 L 3.5 0.5 L 3.5 15.5 L -4.5 15.5 L -4.5 0.5 M -1.5 4 L -1.5 12 M 0.5 4 L 0.5 12"
-        stroke="#999999"
-        strokeWidth="1"
-        style={{ cursor: 'ew-resize' }}
-      />
-    </Group>
   )
 }
 

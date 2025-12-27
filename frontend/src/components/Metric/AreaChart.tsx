@@ -31,19 +31,20 @@ const axisLeftTickLabelProps = {
 
 const format24Hour = timeFormat('%H:%M')
 
-const accentColor = '#bbff00'
 function AreaChart ({
   children,
   left,
   margin,
   metricData,
+  strokeColor,
   top,
   width,
   xScale,
   yMax,
   yScale
 }: {
-  metricData: MetricData[]
+  metricData: MetricData[],
+  strokeColor: string
   xScale: AxisScale<number>
   yScale: AxisScale<number>
   width: number
@@ -73,7 +74,7 @@ function AreaChart ({
         y={yAccessor}
         yScale={yScale}
         strokeWidth={2}
-        stroke={accentColor}
+        stroke={strokeColor}
         fill="transparent"
         curve={curveMonotoneX}
       />
