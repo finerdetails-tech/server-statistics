@@ -4,6 +4,7 @@ import {
 } from 'preact/hooks'
 import type { Metric } from 'types'
 import useContainerDimensions from '../../hooks/useContainerDimensions'
+import useHorizontalScrolling from '../../hooks/useHorizontalScrolling'
 import {removeUntilConditionIsNoLongerMet} from '../../utils'
 import GroupWrapper from './GroupWrapper'
 import MetricGraph from './MetricGraph'
@@ -27,6 +28,8 @@ function MetricsContainer () {
   const {
     isLandscape, metricHeight, metricsContainerRef, metricWidth
   } = useContainerDimensions(rowCount)
+
+  useHorizontalScrolling(isLandscape, metricsContainerRef)
 
   const METRIC_CONFIGS = useMemo(() => ({
     cpu_temp_celsius: {
@@ -151,6 +154,7 @@ function MetricsContainer () {
           : 'column',
         flexWrap: 'wrap',
         height: '100%',
+        overflow: 'auto',
         width: '100%'
       }}>
       <GroupWrapper

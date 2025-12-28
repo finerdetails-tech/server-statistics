@@ -25,8 +25,7 @@ function GroupWrapper ({
       <div
         style={{
           display: 'flex',
-          flexDirection: 'row',
-          overflow: 'auto'
+          flexDirection: 'row'
 
         }}
         class="metric-group-wrapper-landscape">
