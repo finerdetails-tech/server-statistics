@@ -18,6 +18,7 @@ const axisBottomTickLabelProps = {
   fill: axisColor,
   fontFamily: 'Arial',
   fontSize: 10,
+  style: {userSelect: 'none'},
   textAnchor: 'middle' as const
 }
 const axisLeftTickLabelProps = {
@@ -26,6 +27,7 @@ const axisLeftTickLabelProps = {
   fill: axisColor,
   fontFamily: 'Arial',
   fontSize: 10,
+  style: {userSelect: 'none'},
   textAnchor: 'end' as const
 }
 
