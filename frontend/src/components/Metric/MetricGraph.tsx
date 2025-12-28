@@ -29,9 +29,11 @@ const brushMargin = {
 
 const GRADIENT_ID = 'brush_gradient'
 export const accentColor = '#bbff00ff'
+const backgroundColor = '#1a1a1aff'
 
 const topChartBottomMargin = remToPx(4)
 const surroundingMargin = remToPx(2)
+const surroundingPadding = remToPx(2)
 
 function MetricGraph ({
   metricHeight,
@@ -52,9 +54,9 @@ function MetricGraph ({
   })), [ metrics ])
 
   const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
-  const adjustedMetricHeight = useMemo(() => metricHeight - (2 * surroundingMargin), [ metricHeight, surroundingMargin ])
+  const adjustedMetricHeight = useMemo(() => metricHeight - (4 * surroundingMargin), [ metricHeight, surroundingMargin ])
 
-  const xMax = useMemo(() => metricWidth - (2 * surroundingMargin), [ metricWidth, surroundingMargin ])
+  const xMax = useMemo(() => metricWidth - ((2 * surroundingMargin) + (2 * surroundingPadding)), [ metricWidth, surroundingMargin, surroundingPadding ])
   const yMax = useMemo(() => 0.8 * adjustedMetricHeight - topChartBottomMargin, [ adjustedMetricHeight, topChartBottomMargin ])
   const yBrushMax = useMemo(() => adjustedMetricHeight - yMax - topChartBottomMargin, [ adjustedMetricHeight, yMax, topChartBottomMargin ])
 
@@ -132,12 +134,47 @@ function MetricGraph ({
     }, []
   )
 
+  const containerWidth = useMemo(() => xMax + surroundingMargin * 2, [ xMax, surroundingMargin ])
+
+  const patternLineWidth = 2
+  const numTicks = useMemo(() => Math.floor(containerWidth / remToPx(4)), [ containerWidth ])
+
+  const {
+    backgroundSizeUnit,
+    xOffset,
+    yOffset
+  } = useMemo(() => {
+    const ticks = dateScale.ticks(numTicks)
+    if (ticks.length < 2) return null
+
+    const firstTickPos = dateScale(ticks[0]) || 0
+    const secondTickPos = dateScale(ticks[1]) || 0
+    const tickSpacing = Math.abs(secondTickPos - firstTickPos)
+
+
+    const xOffset = firstTickPos + surroundingPadding
+    const backgroundSizeUnit = tickSpacing / 4
+    const yOffset = ((yMax + surroundingPadding) % backgroundSizeUnit) - (patternLineWidth / 2)
+    return {
+      backgroundSizeUnit,
+      xOffset,
+      yOffset
+    }
+
+  }, [ dateScale, numTicks ])
+
+
   return (
     <div
       style={{
-        height: adjustedMetricHeight,
+        backgroundColor: 'transparent',
+        backgroundImage: `linear-gradient(${backgroundColor} ${patternLineWidth}px, transparent ${patternLineWidth}px), linear-gradient(to right, ${backgroundColor} ${patternLineWidth}px, transparent ${patternLineWidth}px)`,
+        backgroundPosition: `${xOffset}px ${yOffset}px`,
+        backgroundSize: `${backgroundSizeUnit}px ${backgroundSizeUnit}px`,
+        height: adjustedMetricHeight + surroundingMargin * 2,
         margin: surroundingMargin,
-        width: xMax
+        padding: surroundingPadding,
+        width: containerWidth
       }}>
       <svg
         display="block"
@@ -146,23 +183,23 @@ function MetricGraph ({
           x={0} y={0} width={xMax} height={adjustedMetricHeight} fill={`url(#${GRADIENT_ID})`} rx={14} />
         <AreaChart
           metricData={displayData}
-          width={xMax}
           yMax={yMax}
           xScale={dateScale}
           yScale={metricScale}
           strokeColor={accentColor}
+          numTicks={numTicks}
         />
         <AreaChart
           hideBottomAxis
           hideLeftAxis
           metricData={brushData}
-          width={xMax}
           yMax={yBrushMax}
           xScale={brushDateScale}
           yScale={brushMetricScale}
           margin={brushMargin}
           top={yMax + topChartBottomMargin}
-          strokeColor="#C3C3C3"
+          strokeColor={accentColor}
+          isAxesEnabled={false}
         >
           <CustomBrush
             xScale={brushDateScale}

@@ -36,12 +36,13 @@ const format24Hour = timeFormat('%H:%M')
 
 function AreaChart ({
   children,
+  isAxesEnabled = true,
   left,
   margin,
   metricData,
+  numTicks,
   strokeColor,
   top,
-  width,
   xScale,
   yMax,
   yScale
@@ -50,7 +51,6 @@ function AreaChart ({
   strokeColor: string
   xScale: AxisScale<number>
   yScale: AxisScale<number>
-  width: number
   yMax: number
   margin?: {
     top: number;
@@ -63,6 +63,8 @@ function AreaChart ({
   top?: number
   left?: number
   children?: ComponentChildren
+  numTicks?: number,
+  isAxesEnabled?: boolean
 }) {
 
   const xAccessor = useCallback((d: MetricData) => xScale(getDate(d)) || 0, [ xScale ])
@@ -81,27 +83,27 @@ function AreaChart ({
         fill="transparent"
         curve={curveMonotoneX}
       />
-      <AxisBottom
-        top={yMax}
-        scale={xScale}
-        numTicks={
-          width > 520
-            ? 10
-            : 5
-        }
-        stroke={axisColor}
-        tickStroke={axisColor}
-        tickLabelProps={axisBottomTickLabelProps}
-        tickFormat={format24Hour}
-      />
+      {isAxesEnabled && (
+        <>
+          <AxisBottom
+            top={yMax}
+            scale={xScale}
+            numTicks={numTicks}
+            stroke={axisColor}
+            tickStroke={axisColor}
+            tickLabelProps={axisBottomTickLabelProps}
+            tickFormat={format24Hour}
+          />
 
-      <AxisLeft
-        scale={yScale}
-        numTicks={5}
-        stroke={axisColor}
-        tickStroke={axisColor}
-        tickLabelProps={axisLeftTickLabelProps}
-      />
+          <AxisLeft
+            scale={yScale}
+            numTicks={5}
+            stroke={axisColor}
+            tickStroke={axisColor}
+            tickLabelProps={axisLeftTickLabelProps}
+          />
+        </>
+      )}
       {children}
     </Group>
   )
