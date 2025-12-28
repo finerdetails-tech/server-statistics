@@ -6,6 +6,7 @@ import { curveMonotoneX } from '@visx/curve'
 import { Group } from '@visx/group'
 import { AreaClosed } from '@visx/shape'
 import { timeFormat } from '@visx/vendor/d3-time-format'
+import type { ComponentChildren } from 'preact'
 import { useCallback } from 'preact/compat'
 import type { MetricData } from 'types'
 import {
@@ -59,7 +60,7 @@ function AreaChart ({
   hideLeftAxis?: boolean
   top?: number
   left?: number
-  children?: React.ReactNode
+  children?: ComponentChildren
 }) {
 
   const xAccessor = useCallback((d: MetricData) => xScale(getDate(d)) || 0, [ xScale ])

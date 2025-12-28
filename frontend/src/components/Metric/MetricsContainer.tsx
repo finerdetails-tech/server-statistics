@@ -1,11 +1,11 @@
 
-
 import {
   useCallback, useEffect, useMemo, useState
 } from 'preact/hooks'
 import type { Metric } from 'types'
 import useContainerDimensions from '../../hooks/useContainerDimensions'
 import {removeUntilConditionIsNoLongerMet} from '../../utils'
+import GroupWrapper from './GroupWrapper'
 import MetricGraph from './MetricGraph'
 
 const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
@@ -22,10 +22,11 @@ function MetricsContainer () {
   const [ filteredDiskTotal, setFilteredDiskTotal ] = useState<Metric[]>([])
   const [ filteredDiskUsedPercent, setFilteredDiskUsedPercent ] = useState<Metric[]>([])
 
+  const rowCount = 2
 
   const {
     isLandscape, metricHeight, metricsContainerRef, metricWidth
-  } = useContainerDimensions()
+  } = useContainerDimensions(rowCount)
 
   const METRIC_CONFIGS = useMemo(() => ({
     cpu_temp_celsius: {
@@ -148,19 +149,21 @@ function MetricsContainer () {
         flexDirection: isLandscape
           ? 'row'
           : 'column',
-        gap: '1rem',
+        flexWrap: 'wrap',
         height: '100%',
-        padding: '1rem',
         width: '100%'
       }}>
-      {Object.entries(METRIC_CONFIGS).map(([ name, config ]) => (
-        <MetricGraph
-          key={name}
-          metricHeight={metricHeight}
-          metricWidth={metricWidth}
-          metrics={config.value}
-        />
-      ))}
+      <GroupWrapper
+        isLandscape={isLandscape} rowCount={rowCount}>
+        {Object.entries(METRIC_CONFIGS).map(([ name, config ]) => (
+          <MetricGraph
+            key={name}
+            metricHeight={metricHeight}
+            metricWidth={metricWidth}
+            metrics={config.value}
+          />
+        ))}
+      </GroupWrapper>
     </div>
   )
 }

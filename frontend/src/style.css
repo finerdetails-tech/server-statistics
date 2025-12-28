@@ -2,6 +2,12 @@ body {
     margin: 0;
 }
 
+.metric-group-row,
+.metric-group-wrapper-landscape {
+    padding: 0;
+    margin: 0;
+}
+
 .app-container * {
     box-sizing: border-box;
 }

@@ -5,7 +5,7 @@ import {
     listCurrentAndParentElements
 } from '../utils'
 
-function useContainerDimensions() {
+function useContainerDimensions(rowCount: number) {
     const {
         height: viewportHeight, width: viewportWidth
     } = useScreenSize()
@@ -47,9 +47,6 @@ function useContainerDimensions() {
             })
             widthProperties.forEach((prop) => {
                 const value = parseFloat(getComputedStyle(element)[prop]) || 0
-                if (value > 0) {
-                    console.warn(`Element:`, element, `Property: ${prop}, Value: ${value}`)
-                }
                 acc.parentWidthStyling += value
             })
             return acc
@@ -61,16 +58,33 @@ function useContainerDimensions() {
     const {
         metricHeight, metricWidth
     } = useMemo(() => {
-        console.log('Parent height styling:', parentHeightStyling, 'Parent width styling:', parentWidthStyling)
-        const metricWidth = Math.max(viewportWidth - parentWidthStyling - SCROLLBAR_WIDTH, 100)
-
+        const headerHeight = document.getElementsByTagName('header')[0]?.offsetHeight || 0
+        let metricHeight: number
+        let metricWidth: number
         const heightToWidthRatio = 2 / 3
-        const availableHeight = viewportHeight - parentHeightStyling
-        const targetHeight = metricWidth * heightToWidthRatio
-        const fittingMetricsCount = Math.max(Math.floor(availableHeight / targetHeight), 1)
-        const leftOverHeight = availableHeight % targetHeight
-        const adjustedHeight = targetHeight + (leftOverHeight / (fittingMetricsCount))
-        const metricHeight = adjustedHeight
+
+        if (isLandscape) {
+            const availableHeight = viewportHeight - parentHeightStyling - headerHeight
+            const availableWidth = Math.max(viewportWidth - parentWidthStyling, 100)
+
+            metricHeight = Math.max((availableHeight / rowCount), 100)
+            const targetWidth = metricHeight / heightToWidthRatio
+            const totalLeftOverWidth = availableWidth % targetWidth
+            const fittingMetricsCount = Math.floor(availableWidth / targetWidth)
+            const leftOverWidth = totalLeftOverWidth / fittingMetricsCount
+
+            metricWidth = targetWidth + leftOverWidth
+
+        } else {
+            metricWidth = Math.max(viewportWidth - parentWidthStyling - SCROLLBAR_WIDTH, 100)
+
+            const availableHeight = viewportHeight - parentHeightStyling - headerHeight
+            const targetHeight = metricWidth * heightToWidthRatio
+            const fittingMetricsCount = Math.max(Math.floor(availableHeight / targetHeight), 1)
+            const leftOverHeight = availableHeight % targetHeight
+            const adjustedHeight = targetHeight + (leftOverHeight / (fittingMetricsCount))
+            metricHeight = adjustedHeight
+        }
 
         return {
             metricHeight,

@@ -30,6 +30,8 @@ const brushMargin = {
 const GRADIENT_ID = 'brush_gradient'
 export const accentColor = '#bbff00ff'
 
+const topChartBottomMargin = remToPx(4)
+const surroundingMargin = remToPx(2)
 
 function MetricGraph ({
   metricHeight,
@@ -50,21 +52,11 @@ function MetricGraph ({
   })), [ metrics ])
 
   const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
+  const adjustedMetricHeight = useMemo(() => metricHeight - (2 * surroundingMargin), [ metricHeight, surroundingMargin ])
 
-  const topChartBottomMargin = remToPx(4)
-  const surroundingMargin = remToPx(1)
-
-  const adjustedMetricHeight = 0.8 * metricHeight - 2 * surroundingMargin
-  const adjustedMetricWidth = metricWidth - 2 * surroundingMargin
-
-  const topChartHeight = adjustedMetricHeight - topChartBottomMargin
-  const bottomChartHeight = adjustedMetricHeight - topChartHeight
-
-  // bounds
-  const xMax = Math.max(adjustedMetricWidth, 0)
-  const yMax = Math.max(topChartHeight, 0)
-  const xBrushMax = Math.max(adjustedMetricWidth, 0)
-  const yBrushMax = Math.max(bottomChartHeight, 0)
+  const xMax = useMemo(() => metricWidth - (2 * surroundingMargin), [ metricWidth, surroundingMargin ])
+  const yMax = useMemo(() => 0.8 * adjustedMetricHeight - topChartBottomMargin, [ adjustedMetricHeight, topChartBottomMargin ])
+  const yBrushMax = useMemo(() => adjustedMetricHeight - yMax - topChartBottomMargin, [ adjustedMetricHeight, yMax, topChartBottomMargin ])
 
   const brushRef = useRef<BaseBrush | null>(null)
   const [ brushFilter, setBrushFilter ] = useState<Bounds | null>(null)
@@ -111,9 +103,9 @@ function MetricGraph ({
   const brushDateScale = useMemo(
     () => scaleTime<number>({
       domain: extent(metricData, getDate) as [Date, Date],
-      range: [ 0, xBrushMax ]
+      range: [ 0, xMax ]
     }),
-    [ xBrushMax, metricData ]
+    [ xMax, metricData ]
   )
   const brushMetricScale = useMemo(
     () => scaleLinear({
@@ -143,18 +135,18 @@ function MetricGraph ({
   return (
     <div
       style={{
-        height: metricHeight,
+        height: adjustedMetricHeight,
         margin: surroundingMargin,
-        width: adjustedMetricWidth
+        width: xMax
       }}>
       <svg
         display="block"
-        width={adjustedMetricWidth} height={metricHeight}>
+        width={xMax} height={adjustedMetricHeight}>
         <rect
-          x={0} y={0} width={adjustedMetricWidth} height={adjustedMetricHeight} fill={`url(#${GRADIENT_ID})`} rx={14} />
+          x={0} y={0} width={xMax} height={adjustedMetricHeight} fill={`url(#${GRADIENT_ID})`} rx={14} />
         <AreaChart
           metricData={displayData}
-          width={adjustedMetricWidth}
+          width={xMax}
           yMax={yMax}
           xScale={dateScale}
           yScale={metricScale}
@@ -164,18 +156,18 @@ function MetricGraph ({
           hideBottomAxis
           hideLeftAxis
           metricData={brushData}
-          width={adjustedMetricWidth}
+          width={xMax}
           yMax={yBrushMax}
           xScale={brushDateScale}
           yScale={brushMetricScale}
           margin={brushMargin}
-          top={topChartHeight + topChartBottomMargin}
+          top={yMax + topChartBottomMargin}
           strokeColor="#C3C3C3"
         >
           <CustomBrush
             xScale={brushDateScale}
             yScale={brushMetricScale}
-            width={xBrushMax}
+            width={xMax}
             height={yBrushMax}
             margin={brushMargin}
             innerRef={brushRef}
