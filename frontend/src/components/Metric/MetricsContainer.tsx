@@ -5,6 +5,7 @@ import {
 import type { Metric } from 'types'
 import useContainerDimensions from '../../hooks/useContainerDimensions'
 import useHorizontalScrolling from '../../hooks/useHorizontalScrolling'
+import useScrollSaving from '../../hooks/useScrollSaving'
 import {removeUntilConditionIsNoLongerMet} from '../../utils'
 import GroupWrapper from './GroupWrapper'
 import MetricGraph from './MetricGraph'
@@ -30,6 +31,7 @@ function MetricsContainer () {
   } = useContainerDimensions(rowCount)
 
   useHorizontalScrolling(isLandscape, metricsContainerRef)
+  useScrollSaving(metricsContainerRef)
 
   const METRIC_CONFIGS = useMemo(() => ({
     cpu_temp_celsius: {
