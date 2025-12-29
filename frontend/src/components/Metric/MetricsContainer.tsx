@@ -144,18 +144,17 @@ function MetricsContainer () {
 
   return (
     <div
+      class="metrics-container"
       ref={metricsContainerRef}
       style={{
         backgroundColor: '#0A0A0C',
         display: 'flex',
-        flex: 1,
         flexDirection: isLandscape
           ? 'row'
           : 'column',
-        flexWrap: 'wrap',
-        height: '100%',
-        overflow: 'auto',
-        width: '100%'
+        flexGrow: 1,
+        flexWrap: 'nowrap',
+        overflow: 'auto'
       }}>
       <GroupWrapper
         isLandscape={isLandscape} rowCount={rowCount}>

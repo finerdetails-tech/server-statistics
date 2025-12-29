@@ -22,20 +22,14 @@ function GroupWrapper ({
     }, []) as ComponentChild[][]
 
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row'
-
-        }}
-        class="metric-group-wrapper-landscape">
+      <>
         {groupedRows.map((row, index) => (
           <div
             key={index} class="metric-group-row">
             {row}
           </div>
         ))}
-      </div>
+      </>
     )
   }
 
