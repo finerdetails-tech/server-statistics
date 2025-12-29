@@ -8,7 +8,7 @@ import {
   extent, max
 } from '@visx/vendor/d3-array'
 import {
-  useCallback, useMemo, useRef, useState
+  useMemo, useRef, useState
 } from 'preact/hooks'
 import type {
   Metric, MetricData
@@ -54,11 +54,11 @@ function MetricGraph ({
   })), [ metrics ])
 
   const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
-  const adjustedMetricHeight = useMemo(() => metricHeight - (4 * surroundingMargin), [ metricHeight, surroundingMargin ])
+  const adjustedMetricHeight = metricHeight - (4 * surroundingMargin)
 
-  const xMax = useMemo(() => metricWidth - ((2 * surroundingMargin) + (2 * surroundingPadding)), [ metricWidth, surroundingMargin, surroundingPadding ])
-  const yMax = useMemo(() => 0.8 * adjustedMetricHeight - topChartBottomMargin, [ adjustedMetricHeight, topChartBottomMargin ])
-  const yBrushMax = useMemo(() => adjustedMetricHeight - yMax - topChartBottomMargin, [ adjustedMetricHeight, yMax, topChartBottomMargin ])
+  const xMax = metricWidth - ((2 * surroundingMargin) + (2 * surroundingPadding))
+  const yMax = 0.8 * adjustedMetricHeight - topChartBottomMargin
+  const yBrushMax = adjustedMetricHeight - yMax - topChartBottomMargin
 
   const brushRef = useRef<BaseBrush | null>(null)
   const [ brushFilter, setBrushFilter ] = useState<Bounds | null>(null)
@@ -80,10 +80,6 @@ function MetricGraph ({
 
     return aggregateMetrics(filteredMetricData)
   }, [ metricData, brushFilter ])
-
-  const onBrushChange = useCallback((domain: Bounds | null) => {
-    setBrushFilter(domain)
-  }, [])
 
 
   // scales
@@ -134,10 +130,10 @@ function MetricGraph ({
     }, []
   )
 
-  const containerWidth = useMemo(() => xMax + surroundingMargin * 2, [ xMax, surroundingMargin ])
+  const containerWidth = xMax + surroundingMargin * 2
 
   const patternLineWidth = 2
-  const numTicks = useMemo(() => Math.floor(containerWidth / remToPx(4)), [ containerWidth ])
+  const numTicks = Math.floor(containerWidth / remToPx(4))
 
   const {
     backgroundSizeUnit,
@@ -209,7 +205,7 @@ function MetricGraph ({
             margin={brushMargin}
             innerRef={brushRef}
             initialBrushPosition={initialBrushPosition}
-            onChange={onBrushChange}
+            onChange={setBrushFilter}
           />
         </AreaChart>
       </svg>

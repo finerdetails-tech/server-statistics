@@ -1,4 +1,4 @@
-import type {ComponentChild} from 'preact'
+import type { ComponentChild } from 'preact'
 
 function GroupWrapper ({
   children, isLandscape, rowCount
