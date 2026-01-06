@@ -30,6 +30,8 @@ const axisLeftTickLabelProps = {
   textAnchor: 'end' as const
 }
 
+const tickLineProps = {strokeWidth: 2}
+
 
 const dynamicTimeFormatter = (tick: string, _index: number, ticks: { value: string }[]) => {
   const firstTickUnix = new Date(ticks[0]?.value).getTime()
@@ -115,6 +117,7 @@ function AreaChart ({
             tickStroke={axisColor}
             tickLabelProps={axisBottomTickLabelProps}
             tickFormat={dynamicTimeFormatter}
+            tickLineProps={tickLineProps}
           />
 
           <AxisLeft
@@ -122,6 +125,7 @@ function AreaChart ({
             numTicks={5}
             stroke={axisColor}
             tickStroke={axisColor}
+            tickLineProps={tickLineProps}
             tickLabelProps={axisLeftTickLabelProps}
           />
         </>
