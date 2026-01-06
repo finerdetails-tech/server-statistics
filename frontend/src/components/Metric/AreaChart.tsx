@@ -5,7 +5,6 @@ import {
 import { curveMonotoneX } from '@visx/curve'
 import { Group } from '@visx/group'
 import { AreaClosed } from '@visx/shape'
-import { timeFormat } from '@visx/vendor/d3-time-format'
 import type { ComponentChildren } from 'preact'
 import { useCallback } from 'preact/compat'
 import type { MetricData } from 'types'
@@ -32,7 +31,30 @@ const axisLeftTickLabelProps = {
 }
 
 
-const format24Hour = timeFormat('%H:%M')
+const dynamicTimeFormatter = (tick: string, _index: number, ticks: { value: string }[]) => {
+  const firstTickUnix = new Date(ticks[0]?.value).getTime()
+  const lastTickUnix = new Date(ticks.at(-1)?.value).getTime()
+  const currentTickDate = new Date(tick)
+
+  if (lastTickUnix - firstTickUnix < 1000 * 60 * 60 * 24) {
+    return currentTickDate.toLocaleTimeString([], {
+      hour: '2-digit',
+      hour12: false,
+      minute: '2-digit'
+    })
+  }
+  if (lastTickUnix - firstTickUnix < 1000 * 60 * 60 * 24 * 7) {
+    return currentTickDate.toLocaleTimeString([], {
+      hour: '2-digit',
+      hour12: false,
+      weekday: 'short'
+    })
+  }
+  return currentTickDate.toLocaleDateString([], {
+    day: 'numeric',
+    month: 'short'
+  })
+}
 
 function AreaChart ({
   children,
@@ -92,7 +114,7 @@ function AreaChart ({
             stroke={axisColor}
             tickStroke={axisColor}
             tickLabelProps={axisBottomTickLabelProps}
-            tickFormat={format24Hour}
+            tickFormat={dynamicTimeFormatter}
           />
 
           <AxisLeft
