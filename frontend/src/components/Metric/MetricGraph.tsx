@@ -32,7 +32,6 @@ export const accentColor = '#bbff00ff'
 const backgroundColor = '#1a1a1aff'
 
 const topChartBottomMargin = remToPx(4)
-const surroundingMargin = remToPx(2)
 const surroundingPadding = remToPx(2)
 
 function MetricGraph ({
@@ -54,9 +53,9 @@ function MetricGraph ({
   })), [ metrics ])
 
   const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
-  const adjustedMetricHeight = metricHeight - (4 * surroundingMargin)
+  const adjustedMetricHeight = metricHeight - (2 * surroundingPadding)
 
-  const xMax = metricWidth - ((2 * surroundingMargin) + (2 * surroundingPadding))
+  const xMax = metricWidth - (2 * surroundingPadding)
   const yMax = 0.8 * adjustedMetricHeight - topChartBottomMargin
   const yBrushMax = adjustedMetricHeight - yMax - topChartBottomMargin
 
@@ -130,7 +129,7 @@ function MetricGraph ({
     }, []
   )
 
-  const containerWidth = xMax + surroundingMargin * 2
+  const containerWidth = xMax
 
   const patternLineWidth = 2
   const numTicks = Math.floor(containerWidth / remToPx(4))
@@ -167,8 +166,8 @@ function MetricGraph ({
         backgroundImage: `linear-gradient(${backgroundColor} ${patternLineWidth}px, transparent ${patternLineWidth}px), linear-gradient(to right, ${backgroundColor} ${patternLineWidth}px, transparent ${patternLineWidth}px)`,
         backgroundPosition: `${xOffset}px ${yOffset}px`,
         backgroundSize: `${backgroundSizeUnit}px ${backgroundSizeUnit}px`,
-        height: adjustedMetricHeight + surroundingMargin * 2,
-        margin: surroundingMargin,
+        height: adjustedMetricHeight,
+        justifySelf: 'center',
         padding: surroundingPadding,
         width: containerWidth
       }}>

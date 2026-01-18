@@ -4,17 +4,34 @@ import { useMemo, useRef } from 'preact/hooks'
 import {
     listCurrentAndParentElements
 } from '../utils'
+import useMetricsConfig from './useMetricsConfig'
 
-function useContainerDimensions(rowCount: number) {
+function useDimensions(metricsContainerGap: number) {
     const {
         height: viewportHeight, width: viewportWidth
     } = useScreenSize()
+
+    const metricsContainerRowCount = viewportHeight > 720 ? 2 : 1
+
+    const { metricsConfigList } = useMetricsConfig()
+
+    const landScapeColumns = Math.ceil(metricsConfigList.length / metricsContainerRowCount)
+
 
     const metricsContainerRef = useRef<HTMLDivElement>(null)
 
     const isLandscape = useMemo(() => {
         return viewportWidth > viewportHeight
     }, [viewportWidth, viewportHeight])
+
+    const totalGap = {
+        x: (isLandscape
+            ? ((landScapeColumns - 1) * metricsContainerGap)
+            : 0),
+        y: (isLandscape
+            ? ((Math.max(metricsContainerRowCount, 1) - 1) * metricsContainerGap)
+            : ((metricsConfigList.length - 1) * metricsContainerGap))
+    }
 
     const SCROLLBAR_WIDTH = useMemo(() => {
         const outer = document.createElement('div')
@@ -56,7 +73,7 @@ function useContainerDimensions(rowCount: number) {
         }), [metricsContainerRef.current])
 
     const {
-        metricHeight, metricWidth
+        metricHeight, metricWidth, headerHeight
     } = useMemo(() => {
         const headerHeight = document.getElementsByTagName('header')[0]?.offsetHeight || 0
         let metricHeight: number
@@ -64,10 +81,10 @@ function useContainerDimensions(rowCount: number) {
         const heightToWidthRatio = 2 / 3
 
         if (isLandscape) {
-            const availableHeight = viewportHeight - parentHeightStyling - headerHeight
-            const availableWidth = Math.max(viewportWidth - parentWidthStyling, 100)
+            const availableHeight = viewportHeight - parentHeightStyling - headerHeight - totalGap.y - SCROLLBAR_WIDTH// TODO: TÄSSÄ ON LIIKAA KORKEUTTA
+            const availableWidth = Math.max(viewportWidth - parentWidthStyling - totalGap.x, 100)
 
-            metricHeight = Math.max((availableHeight / rowCount), 100)
+            metricHeight = Math.max((availableHeight / metricsContainerRowCount), 100)
             const targetWidth = metricHeight / heightToWidthRatio
             const totalLeftOverWidth = availableWidth % targetWidth
             const fittingMetricsCount = Math.floor(availableWidth / targetWidth)
@@ -78,7 +95,7 @@ function useContainerDimensions(rowCount: number) {
         } else {
             metricWidth = Math.max(viewportWidth - parentWidthStyling - SCROLLBAR_WIDTH, 100)
 
-            const availableHeight = viewportHeight - parentHeightStyling - headerHeight
+            const availableHeight = viewportHeight - parentHeightStyling - headerHeight - totalGap.y
             const targetHeight = metricWidth * heightToWidthRatio
             const fittingMetricsCount = Math.max(Math.floor(availableHeight / targetHeight), 1)
             const leftOverHeight = availableHeight % targetHeight
@@ -88,12 +105,12 @@ function useContainerDimensions(rowCount: number) {
 
         return {
             metricHeight,
-            metricWidth
+            metricWidth,
+            headerHeight
         }
     }, [isLandscape, viewportHeight, viewportWidth])
 
-    return { metricHeight, metricWidth, isLandscape, metricsContainerRef }
-
+    return { metricHeight, metricWidth, headerHeight, isLandscape, SCROLLBAR_WIDTH, metricsContainerRef, metricsContainerRowCount }
 }
 
-export default useContainerDimensions
+export default useDimensions

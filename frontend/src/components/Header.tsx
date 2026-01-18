@@ -7,7 +7,7 @@ function Header () {
         fontSize: '1.5rem',
         justifyContent: 'center',
         padding: '1rem',
-        width: '100%'
+        width: 'inherit'
       }}>
       Server Statistics
     </header>
