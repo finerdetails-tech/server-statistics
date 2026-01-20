@@ -19,32 +19,32 @@ function Model ({
     init(canvasRef.current)
   }, [])
 
-  const baseStyle = {
-    height: isLandscape
-      ? `calc(100% - ${headerHeight + SCROLLBAR_WIDTH}px)`
-      : '100vh',
-    width: isLandscape
-      ? '100vw'
-      : '100%'
-  }
-
 
   return (
     <>
       <div
         style={{
           flexShrink: 0,
-          ...baseStyle
+          height: '100%',
+          width: isLandscape
+            ? '100vw'
+            : '100%'
         }}
       />
       <canvas
         ref={canvasRef} style={{
           bottom: 0,
+          height: `calc(100% - ${headerHeight + (isLandscape
+            ? SCROLLBAR_WIDTH
+            : 0)}px)`,
           left: 0,
           position: 'absolute',
           right: 0,
           top: headerHeight,
-          ...baseStyle
+          width: isLandscape
+            ? '100vw'
+            : '100%',
+          zIndex: -1
         }}
       />
     </>

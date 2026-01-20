@@ -25,19 +25,19 @@ export function App () {
   useScrollSaving(appContainerRef)
 
   return (
-    <div>
+    <>
       <Header />
       <div
         ref={appContainerRef}
         class="app-container"
         style={{
-          backgroundColor: '#0A0A0C',
           display: 'flex',
           flexDirection: isLandscape
             ? 'row'
             : 'column',
           flexGrow: 1,
           flexWrap: 'nowrap',
+          maxHeight: `calc(100vh - ${headerHeight}px)`,
           maxWidth: '100vw',
           overflow: 'auto'
         }}>
@@ -55,7 +55,7 @@ export function App () {
           rowCount={metricsContainerRowCount}
         />
       </div>
-    </div>
+    </>
   )
 }
 
