@@ -22,7 +22,7 @@ export function init(canvasRef: HTMLCanvasElement | null) {
     camera.position.z = 150
     camera.position.y = 2
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 5)
     directionalLight.position.set(5, 5, 5)
     scene.add(directionalLight)
 
@@ -35,15 +35,24 @@ export function init(canvasRef: HTMLCanvasElement | null) {
     loader.setDRACOLoader(dracoLoader)
 
     let model: THREE.Group
+    const modelMaterial = new THREE.MeshStandardMaterial({
+        color: 0xFFFFFF,
+        metalness: 0.5,
+        roughness: 0.5
+    })
 
     loader.load(piModelUrl, function (gltf) {
-        model = gltf.scene
+        model = new THREE.Group()
+
+        gltf.scene.children.forEach((child) => {
+            if (child instanceof THREE.Mesh) {
+
+                const mesh = new THREE.Mesh(child.geometry, modelMaterial)
+                model.add(mesh)
+            }
+        })
+
         scene.add(model)
-
-    }, undefined, function (error) {
-
-        console.error(error)
-
     })
 
     renderer = new THREE.WebGLRenderer({ canvas: canvasRef! })
@@ -59,11 +68,5 @@ export function init(canvasRef: HTMLCanvasElement | null) {
     renderer.setAnimationLoop(animate)
 
 }
-
-//TODO:
-/*
-- Dynamic aspect ratio?
-- Use model for geometry only, apply own material?
-*/
 
 
