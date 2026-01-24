@@ -1,23 +1,37 @@
 import {
   useEffect, useRef
 } from 'preact/compat'
-import { init } from './three'
+import { debounce } from 'throttle-debounce'
+import {
+  init, resize
+} from './three'
+
+const debouncedResize = debounce(250, (viewportHeight: number, viewportWidth: number) => resize(viewportHeight, viewportWidth))
 
 function Model ({
   headerHeight,
   isLandscape,
-  SCROLLBAR_WIDTH
+  SCROLLBAR_WIDTH,
+  viewportHeight,
+  viewportWidth
 }: {
   isLandscape: boolean,
   headerHeight: number,
-  SCROLLBAR_WIDTH: number
+  SCROLLBAR_WIDTH: number,
+  viewportHeight: number,
+  viewportWidth: number
 }) {
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     console.warn('Initializing 3D scene')
     init(canvasRef.current)
   }, [])
+
+  useEffect(() => {
+    debouncedResize(viewportHeight, viewportWidth)
+  }, [ viewportHeight, viewportWidth, debouncedResize ])
 
 
   return (

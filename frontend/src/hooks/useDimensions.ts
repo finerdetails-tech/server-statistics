@@ -110,7 +110,7 @@ function useDimensions(metricsContainerGap: number) {
         }
     }, [isLandscape, viewportHeight, viewportWidth])
 
-    return { metricHeight, metricWidth, headerHeight, isLandscape, SCROLLBAR_WIDTH, metricsContainerRef, metricsContainerRowCount }
+    return { metricHeight, metricWidth, headerHeight, isLandscape, SCROLLBAR_WIDTH, metricsContainerRef, metricsContainerRowCount, viewportWidth, viewportHeight }
 }
 
 export default useDimensions
