@@ -24,7 +24,6 @@ function MetricsContainer ({
 
 
   const handleMetricUpdate = useCallback((event: MessageEvent) => {
-    console.log('Received metric update via WebSocket')
     const newMetrics = JSON.parse(event.data) as { [key: string]: Metric[] }
     const cutoffTimestamp = Math.floor(Date.now() / 1000) - (METRICS_RETAINING_TIME_DAYS * 24 * 60 * 60)
     const metricNames = Object.keys(newMetrics)

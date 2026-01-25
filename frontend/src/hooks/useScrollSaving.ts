@@ -1,4 +1,26 @@
 import { useLayoutEffect } from "react"
+
+const elementToPercent = (element: HTMLElement) => {
+    const maxScrollLeft = element.scrollWidth - element.clientWidth
+    const maxScrollTop = element.scrollHeight - element.clientHeight
+
+    return {
+        verticalPercent: element.scrollTop / maxScrollTop,
+        horizontalPercent: element.scrollLeft / maxScrollLeft
+    }
+}
+
+const JSONStringToPx = (element: HTMLElement, jsonString: string) => {
+    const maxScrollLeft = element.scrollWidth - element.clientWidth
+    const maxScrollTop = element.scrollHeight - element.clientHeight
+    const { horizontalPercent, verticalPercent } = JSON.parse(jsonString)
+
+    return {
+        verticalPx: verticalPercent * maxScrollTop,
+        horizontalPx: horizontalPercent * maxScrollLeft
+    }
+}
+
 function useScrollSaving(scrollContainerRef: React.RefObject<HTMLElement>, isMetricsLoaded: boolean) {
     useLayoutEffect(() => {
         const element = scrollContainerRef.current
@@ -7,10 +29,12 @@ function useScrollSaving(scrollContainerRef: React.RefObject<HTMLElement>, isMet
         const restore = () => {
             const raw = localStorage.getItem("scrollPosition")
             if (!raw) return
-            const { horizontal, vertical } = JSON.parse(raw)
+
+            const { horizontalPx, verticalPx } = JSONStringToPx(element, raw)
             const isScrollable = element.scrollWidth > element.clientWidth || element.scrollHeight > element.clientHeight
+
             if (isScrollable) {
-                element.scrollTo(horizontal, vertical)
+                element.scrollTo(horizontalPx, verticalPx)
             } else {
                 requestAnimationFrame(restore)
             }
@@ -21,10 +45,7 @@ function useScrollSaving(scrollContainerRef: React.RefObject<HTMLElement>, isMet
         const onScrollend = () => {
             localStorage.setItem(
                 "scrollPosition",
-                JSON.stringify({
-                    vertical: element.scrollTop,
-                    horizontal: element.scrollLeft
-                })
+                JSON.stringify(elementToPercent(element))
             )
         }
 
