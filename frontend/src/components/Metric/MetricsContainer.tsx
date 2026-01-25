@@ -10,19 +10,21 @@ import MetricGraph from './MetricGraph'
 const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
 
 function MetricsContainer ({
-  gap, isLandscape, metricHeight, metricsContainerRef, metricWidth, rowCount
+  gap, isLandscape, metricHeight, metricsContainerRef, metricWidth, rowCount, setIsMetricsLoaded
 }: {
   metricHeight: number
   metricWidth: number
   isLandscape: boolean
   metricsContainerRef: preact.RefObject<HTMLDivElement>
   rowCount: number
-  gap: number
+  gap: number,
+  setIsMetricsLoaded: (loaded: boolean) => void
 }) {
   const { METRICS_CONFIG } = useMetricsConfig()
 
 
   const handleMetricUpdate = useCallback((event: MessageEvent) => {
+    console.log('Received metric update via WebSocket')
     const newMetrics = JSON.parse(event.data) as { [key: string]: Metric[] }
     const cutoffTimestamp = Math.floor(Date.now() / 1000) - (METRICS_RETAINING_TIME_DAYS * 24 * 60 * 60)
     const metricNames = Object.keys(newMetrics)
@@ -38,7 +40,9 @@ function MetricsContainer ({
         return [ ...cleanedOldMetrics, ...newMetrics[metricName] ]
       })
     }
-  }, [])
+
+    setIsMetricsLoaded(true)
+  }, [ setIsMetricsLoaded ])
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8080/api/metrics')

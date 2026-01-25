@@ -1,7 +1,9 @@
 
 import './style.css'
 import { render } from 'preact'
-import {useRef} from 'preact/compat'
+import {
+  useRef, useState
+} from 'preact/compat'
 import Model from './components/3D/Model'
 import Header from './components/Header'
 import MetricsContainer from './components/Metric/MetricsContainer'
@@ -12,6 +14,7 @@ import { remToPx } from './utils'
 
 
 export function App () {
+  const [ isMetricsLoaded, setIsMetricsLoaded ] = useState(false)
 
   const appContainerRef = useRef<HTMLDivElement>(null)
 
@@ -22,7 +25,7 @@ export function App () {
   } = useDimensions(metricsContainerGap)
 
   useHorizontalScrolling(isLandscape, appContainerRef)
-  useScrollSaving(appContainerRef)
+  useScrollSaving(appContainerRef, isMetricsLoaded)
 
   return (
     <>
@@ -55,6 +58,7 @@ export function App () {
           isLandscape={isLandscape}
           metricsContainerRef={metricsContainerRef}
           rowCount={metricsContainerRowCount}
+          setIsMetricsLoaded={setIsMetricsLoaded}
         />
       </div>
     </>

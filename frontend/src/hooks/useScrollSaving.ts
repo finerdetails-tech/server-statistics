@@ -1,8 +1,8 @@
 import { useLayoutEffect } from "react"
-function useScrollSaving(scrollContainerRef: React.RefObject<HTMLElement>) {
+function useScrollSaving(scrollContainerRef: React.RefObject<HTMLElement>, isMetricsLoaded: boolean) {
     useLayoutEffect(() => {
         const element = scrollContainerRef.current
-        if (!element) return
+        if (!element || !isMetricsLoaded) return
 
         const restore = () => {
             const raw = localStorage.getItem("scrollPosition")
@@ -30,6 +30,6 @@ function useScrollSaving(scrollContainerRef: React.RefObject<HTMLElement>) {
 
         element.addEventListener("scrollend", onScrollend)
         return () => element.removeEventListener("scrollend", onScrollend)
-    }, [scrollContainerRef])
+    }, [scrollContainerRef, isMetricsLoaded])
 }
 export default useScrollSaving
