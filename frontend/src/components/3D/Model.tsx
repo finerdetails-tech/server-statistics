@@ -3,7 +3,7 @@ import {
 } from 'preact/compat'
 import { debounce } from 'throttle-debounce'
 import {
-  init, resize
+  init, resize, setScrollElement
 } from './three'
 
 const debouncedResize = debounce(250, (viewportHeight: number, viewportWidth: number) => resize(viewportHeight, viewportWidth))
@@ -12,6 +12,7 @@ function Model ({
   headerHeight,
   isLandscape,
   SCROLLBAR_WIDTH,
+  scrollContainerRef,
   viewportHeight,
   viewportWidth
 }: {
@@ -19,7 +20,8 @@ function Model ({
   headerHeight: number,
   SCROLLBAR_WIDTH: number,
   viewportHeight: number,
-  viewportWidth: number
+  viewportWidth: number,
+  scrollContainerRef: React.RefObject<HTMLElement>
 }) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -33,6 +35,11 @@ function Model ({
     debouncedResize(viewportHeight, viewportWidth)
   }, [ viewportHeight, viewportWidth, debouncedResize ])
 
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      setScrollElement(scrollContainerRef.current, isLandscape)
+    }
+  }, [ scrollContainerRef, isLandscape ])
 
   return (
     <>

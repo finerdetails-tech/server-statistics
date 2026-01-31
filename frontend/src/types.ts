@@ -6,7 +6,7 @@ export type MetricNames =
     "mem_usage_percent" |
     "cpu_temp_celsius" |
     "disk_used_kb" |
-    "disk_used_percent";
+    "disk_used_percent"
 
 
 
@@ -18,6 +18,11 @@ export type Metric = {
 }
 
 export type MetricData = {
-    TimeStamp: number;
-    Value: number;
-};
+    TimeStamp: number
+    Value: number
+}
+
+export type ScrollPercent = {
+    verticalPercent: number,
+    horizontalPercent: number
+}

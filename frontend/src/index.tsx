@@ -16,7 +16,7 @@ import { remToPx } from './utils'
 export function App () {
   const [ isMetricsLoaded, setIsMetricsLoaded ] = useState(false)
 
-  const appContainerRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const metricsContainerGap = remToPx(2)
 
@@ -24,14 +24,14 @@ export function App () {
     headerHeight, isLandscape, metricHeight, metricsContainerRef, metricsContainerRowCount, metricWidth, SCROLLBAR_WIDTH, viewportHeight, viewportWidth
   } = useDimensions(metricsContainerGap)
 
-  useHorizontalScrolling(isLandscape, appContainerRef)
-  useScrollSaving(appContainerRef, isMetricsLoaded)
+  useHorizontalScrolling(isLandscape, scrollContainerRef)
+  useScrollSaving(scrollContainerRef, isMetricsLoaded)
 
   return (
     <>
       <Header />
       <div
-        ref={appContainerRef}
+        ref={scrollContainerRef}
         class="app-container"
         style={{
           display: 'flex',
@@ -45,6 +45,7 @@ export function App () {
           overflow: 'auto'
         }}>
         <Model
+          scrollContainerRef={scrollContainerRef}
           headerHeight={headerHeight}
           isLandscape={isLandscape}
           SCROLLBAR_WIDTH={SCROLLBAR_WIDTH}

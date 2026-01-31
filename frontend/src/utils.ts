@@ -1,4 +1,4 @@
-import type { MetricData } from 'types'
+import type { MetricData, ScrollPercent } from 'types'
 
 export const getDate = (metric: MetricData) => {
   const timeStampInMs = metric?.TimeStamp * 1000
@@ -71,4 +71,15 @@ export const removeUntilConditionIsNoLongerMet = (
   }
 
   return array.slice(startIndex)
+}
+
+
+export const elementToPercent = (element: HTMLElement): ScrollPercent => {
+  const maxScrollLeft = element.scrollWidth - element.clientWidth
+  const maxScrollTop = element.scrollHeight - element.clientHeight
+
+  return {
+    verticalPercent: element.scrollTop / maxScrollTop,
+    horizontalPercent: element.scrollLeft / maxScrollLeft
+  }
 }

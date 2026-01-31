@@ -1,14 +1,6 @@
-import { useLayoutEffect } from "react"
-
-const elementToPercent = (element: HTMLElement) => {
-    const maxScrollLeft = element.scrollWidth - element.clientWidth
-    const maxScrollTop = element.scrollHeight - element.clientHeight
-
-    return {
-        verticalPercent: element.scrollTop / maxScrollTop,
-        horizontalPercent: element.scrollLeft / maxScrollLeft
-    }
-}
+import { useLayoutEffect } from 'preact/compat'
+import { debounce } from "throttle-debounce"
+import { elementToPercent } from '../utils'
 
 const JSONStringToPx = (element: HTMLElement, jsonString: string) => {
     const maxScrollLeft = element.scrollWidth - element.clientWidth
@@ -22,6 +14,7 @@ const JSONStringToPx = (element: HTMLElement, jsonString: string) => {
 }
 
 function useScrollSaving(scrollContainerRef: React.RefObject<HTMLElement>, isMetricsLoaded: boolean) {
+
     useLayoutEffect(() => {
         const element = scrollContainerRef.current
         if (!element || !isMetricsLoaded) return
@@ -42,14 +35,15 @@ function useScrollSaving(scrollContainerRef: React.RefObject<HTMLElement>, isMet
 
         restore()
 
-        const onScrollend = () => {
+        const onScrollend = debounce(500, () => {
             localStorage.setItem(
                 "scrollPosition",
                 JSON.stringify(elementToPercent(element))
             )
-        }
+        })
 
         element.addEventListener("scrollend", onScrollend)
+
         return () => element.removeEventListener("scrollend", onScrollend)
     }, [scrollContainerRef, isMetricsLoaded])
 }
