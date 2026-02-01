@@ -3,7 +3,7 @@ import {
 } from 'preact/compat'
 import { debounce } from 'throttle-debounce'
 import {
-  init, resize, setScrollElement
+  init, resize, setScrollElements
 } from './three'
 
 const debouncedResize = debounce(250, (viewportHeight: number, viewportWidth: number) => resize(viewportHeight, viewportWidth))
@@ -25,6 +25,7 @@ function Model ({
 }) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const placeholderRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     console.warn('Initializing 3D scene')
@@ -37,18 +38,21 @@ function Model ({
 
   useEffect(() => {
     if (scrollContainerRef.current) {
-      setScrollElement(scrollContainerRef.current, isLandscape)
+      setScrollElements(placeholderRef.current, scrollContainerRef.current, isLandscape)
     }
   }, [ scrollContainerRef, isLandscape ])
 
   return (
     <>
       <div
+        ref={placeholderRef}
         style={{
           flexShrink: 0,
-          height: '100%',
+          height: isLandscape
+            ? '100%'
+            : '200%',
           width: isLandscape
-            ? '100vw'
+            ? '200vw'
             : '100%'
         }}
       />

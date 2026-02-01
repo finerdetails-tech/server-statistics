@@ -4,29 +4,31 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
 import piModelUrl from '../../assets/pi_model.glb?url'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
-import { elementToPercent } from '../../utils'
 
 let camera: THREE.PerspectiveCamera
 let renderer: THREE.WebGLRenderer
 let scrollElement: HTMLElement | null = null
+let placeholderElement: HTMLElement | null = null
 let isLandscape = false
 
 const INITIAL_POSITION_Z = 150
-const INITIAL_POSITION_Y = 2
+const INITIAL_POSITION_Y = 8
 
-export function setScrollElement(element: HTMLElement, landscape: boolean) {
-    scrollElement = element
+const getModelAreaScrollPercent = () => {
+    if (isLandscape) {
+        return scrollElement.scrollLeft / placeholderElement.clientWidth
+    }
+    return scrollElement.scrollTop / placeholderElement.clientHeight
+}
+
+export function setScrollElements(pElement: HTMLElement, sElement: HTMLElement, landscape: boolean) {
+    placeholderElement = pElement
+    scrollElement = sElement
     isLandscape = landscape
 }
 
-function getScrollPercent(): number {
-    if (!scrollElement) return 0
-    const scrollPercent = elementToPercent(scrollElement)
-
-    if (isLandscape) {
-        return scrollPercent.horizontalPercent
-    }
-    return scrollPercent.verticalPercent
+export function setPlaceholderElement(element: HTMLElement) {
+    placeholderElement = element
 }
 
 export function resize(viewportHeight: number, viewportWidth: number) {
@@ -85,11 +87,15 @@ export function init(canvasRef: HTMLCanvasElement | null) {
     //TODO: add effects
 
     function animate() {
-        const scrollPercent = getScrollPercent()
-        const rotation = scrollPercent * scrollPercent * Math.PI * 0.5
+        const modelAreaScrollPercent = getModelAreaScrollPercent()
+        const portViewRotation = 1.563
+        const rotation = Math.min(modelAreaScrollPercent * modelAreaScrollPercent * Math.PI * 2, portViewRotation)
+        const zoom = 1 + ((modelAreaScrollPercent > 0.4) ? (modelAreaScrollPercent - 0.4) : 0) * 10
 
         scene.rotation.z = -rotation
         scene.rotation.x = -rotation
+        camera.zoom = zoom
+        camera.updateProjectionMatrix()
         composer.render(scene, camera)
     }
     renderer.setAnimationLoop(animate)

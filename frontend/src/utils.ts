@@ -74,7 +74,7 @@ export const removeUntilConditionIsNoLongerMet = (
 }
 
 
-export const elementToPercent = (element: HTMLElement): ScrollPercent => {
+export const elementScrollToPercent = (element: HTMLElement): ScrollPercent => {
   const maxScrollLeft = element.scrollWidth - element.clientWidth
   const maxScrollTop = element.scrollHeight - element.clientHeight
 

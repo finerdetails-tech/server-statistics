@@ -1,6 +1,6 @@
 import { useLayoutEffect } from 'preact/compat'
 import { debounce } from "throttle-debounce"
-import { elementToPercent } from '../utils'
+import { elementScrollToPercent } from '../utils'
 
 const JSONStringToPx = (element: HTMLElement, jsonString: string) => {
     const maxScrollLeft = element.scrollWidth - element.clientWidth
@@ -38,7 +38,7 @@ function useScrollSaving(scrollContainerRef: React.RefObject<HTMLElement>, isMet
         const onScrollend = debounce(500, () => {
             localStorage.setItem(
                 "scrollPosition",
-                JSON.stringify(elementToPercent(element))
+                JSON.stringify(elementScrollToPercent(element))
             )
         })
 
