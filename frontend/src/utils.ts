@@ -1,4 +1,6 @@
-import type { MetricData, ScrollPercent } from 'types'
+import type {
+  MetricData, ScrollPercent
+} from 'types'
 
 export const getDate = (metric: MetricData) => {
   const timeStampInMs = metric?.TimeStamp * 1000
@@ -7,7 +9,7 @@ export const getDate = (metric: MetricData) => {
 export const getMetricValue = (metric: MetricData) => metric?.Value
 
 export const listCurrentAndParentElements = (element: HTMLElement | null): HTMLElement[] => {
-  const parents: HTMLElement[] = [element]
+  const parents: HTMLElement[] = [ element ]
   let current = element?.parentElement
 
   while (current) {
@@ -32,13 +34,14 @@ export const aggregateMetrics = (
   const a = 2.44 * Math.pow(10, -10)
   const b = 6.26 * Math.pow(10, -5)
   const c = 0.773
+
   /*
-  formula matches the following points:
-  (1 hour, 1 bucket)
-  (1 day, 8 buckets)
-  (1 week, 128 buckets)
-  capped at min 1 and max 256 buckets
-  */
+   *formula matches the following points:
+   *(1 hour, 1 bucket)
+   *(1 day, 8 buckets)
+   *(1 week, 128 buckets)
+   *capped at min 1 and max 256 buckets
+   */
   const formula = (x: number) => a * Math.pow(x, 2) + b * x + c
   const bucketSize = Math.ceil(Math.min(formula(metricsTimeSpanSeconds), 256))
 
@@ -60,9 +63,9 @@ export const aggregateMetrics = (
   return buckets
 }
 
-export const removeUntilConditionIsNoLongerMet = (
-  array: any[],
-  condition: (item: any) => boolean
+export const removeUntilConditionIsNoLongerMet = <T>(
+  array: T[],
+  condition: (item: T) => boolean
 ) => {
   let startIndex = 0
 
@@ -79,7 +82,7 @@ export const elementScrollToPercent = (element: HTMLElement): ScrollPercent => {
   const maxScrollTop = element.scrollHeight - element.clientHeight
 
   return {
-    verticalPercent: element.scrollTop / maxScrollTop,
-    horizontalPercent: element.scrollLeft / maxScrollLeft
+    horizontalPercent: element.scrollLeft / maxScrollLeft,
+    verticalPercent: element.scrollTop / maxScrollTop
   }
 }
