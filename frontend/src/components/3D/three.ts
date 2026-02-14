@@ -1,9 +1,11 @@
 import * as THREE from 'three'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
 import piModelUrl from '../../assets/pi_model.glb?url'
+import getGlyphCanvas from './getGlyphCanvas'
+import {
+  fragmentShader, vertexShader
+} from './shaders'
 
 let camera: THREE.OrthographicCamera
 let renderer: THREE.WebGLRenderer
@@ -11,6 +13,13 @@ let scrollElement: HTMLElement | null = null
 let placeholderElement: HTMLElement | null = null
 let isLandscape = false
 let model: THREE.Group | null = null
+let renderTarget: THREE.WebGLRenderTarget | null = null
+let asciiMaterial: THREE.ShaderMaterial | null = null
+const postScene = new THREE.Scene()
+
+const postCamera = new THREE.OrthographicCamera(
+  -1, 1, 1, -1, 0, 1
+)
 
 const INITIAL_POSITION_Z = 150
 const INITIAL_POSITION_Y = 8
@@ -44,12 +53,21 @@ export function resize (viewportHeight: number, viewportWidth: number) {
     camera.far = 1000
     camera.updateProjectionMatrix()
   }
+
+  if (renderTarget) {
+    renderTarget.setSize(viewportWidth, viewportHeight)
+  }
+
   if (renderer) {
     renderer.setSize(viewportWidth, viewportHeight, false)
   }
 
   if (model) {
     fitModelToViewport(model, viewportHeight, viewportWidth)
+  }
+
+  if (asciiMaterial) {
+    asciiMaterial.uniforms.resolution.value.set(viewportWidth, viewportHeight)
   }
 }
 
@@ -100,6 +118,13 @@ export function init (canvasRef: HTMLCanvasElement | null) {
   const loader = new GLTFLoader()
   loader.setDRACOLoader(dracoLoader)
 
+  renderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight,
+    {
+      format: THREE.RGBAFormat,
+      magFilter: THREE.LinearFilter,
+      minFilter: THREE.LinearFilter
+    })
+
   const modelMaterial = new THREE.MeshStandardMaterial({
     color: 0xFFFFFF,
     metalness: 0.5,
@@ -120,13 +145,35 @@ export function init (canvasRef: HTMLCanvasElement | null) {
     scene.add(model)
   })
 
+  const glyphTexture = new THREE.CanvasTexture(getGlyphCanvas())
+  glyphTexture.minFilter = THREE.LinearFilter
+  glyphTexture.magFilter = THREE.LinearFilter
+  glyphTexture.needsUpdate = true
+
+  asciiMaterial = new THREE.ShaderMaterial({
+    fragmentShader: fragmentShader,
+    side: THREE.DoubleSide,
+    uniforms: {
+      cellSize: { value: new THREE.Vector2(4, 8) },
+      glyphAtlas: { value: glyphTexture },
+      glyphCount: { value: 16 },
+      resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      sceneTexture: { value: renderTarget.texture }
+    },
+    vertexShader: vertexShader
+  })
+
+  const quad = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    asciiMaterial!
+  )
+
+
+  postScene.add(quad)
+
   renderer = new THREE.WebGLRenderer({ canvas: canvasRef! })
   renderer.setSize(window.innerWidth, window.innerHeight)
   document.body.appendChild(renderer.domElement)
-
-  const composer = new EffectComposer(renderer)
-  composer.addPass(new RenderPass(scene, camera))
-  // TODO: add effects
 
   function animate () {
     const modelAreaScrollPercent = getModelAreaScrollPercent()
@@ -142,9 +189,12 @@ export function init (canvasRef: HTMLCanvasElement | null) {
     }
     camera.zoom = zoom
     camera.updateProjectionMatrix()
-    composer.render()
+
+    renderer.setRenderTarget(renderTarget)
+    renderer.render(scene, camera)
+
+    renderer.setRenderTarget(null)
+    renderer.render(postScene, postCamera)
   }
   renderer.setAnimationLoop(animate)
 }
-
-
