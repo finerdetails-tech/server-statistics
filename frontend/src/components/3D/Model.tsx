@@ -63,6 +63,8 @@ function Model ({
             ? SCROLLBAR_WIDTH
             : 0)}px)`,
           left: 0,
+          maxHeight: "100vh",
+          maxWidth: "100vw",
           position: 'absolute',
           right: 0,
           top: headerHeight,

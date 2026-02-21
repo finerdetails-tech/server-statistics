@@ -22,7 +22,7 @@ const postCamera = new THREE.OrthographicCamera(
 )
 
 const INITIAL_POSITION_Z = 150
-const INITIAL_POSITION_Y = 8
+const INITIAL_POSITION_Y = 0
 
 const getModelAreaScrollPercent = () => {
   if (isLandscape) {
@@ -82,6 +82,13 @@ function pixelsToWorldUnits (pixels: number): number {
   return pixels / pixelsPerWorldUnit
 }
 
+function getModelCenter (box?: THREE.Box3): THREE.Vector3 {
+  if (!model) return new THREE.Vector3()
+  const newBox = box ?? new THREE.Box3().setFromObject(model)
+  return newBox.getCenter(new THREE.Vector3())
+}
+
+
 function fitModelToViewport (model: THREE.Group, viewportHeight: number, viewportWidth: number) {
   const box = new THREE.Box3().setFromObject(model)
   const size = box.getSize(new THREE.Vector3())
@@ -92,7 +99,7 @@ function fitModelToViewport (model: THREE.Group, viewportHeight: number, viewpor
   const scale = modelDesiredSizeInWorldUnits / maxDim
   model.scale.set(scale, scale, scale)
 
-  const center = box.getCenter(new THREE.Vector3())
+  const center = getModelCenter(box)
   model.position.x = -center.x * scale
   model.position.y = -center.y * scale
   model.position.z = -center.z * scale
@@ -102,7 +109,7 @@ function fitModelToViewport (model: THREE.Group, viewportHeight: number, viewpor
 export function init (canvasRef: HTMLCanvasElement | null) {
   const scene = new THREE.Scene()
   camera = new THREE.OrthographicCamera()
-  resize(window.innerHeight, window.innerWidth)
+
   camera.position.z = INITIAL_POSITION_Z
   camera.position.y = INITIAL_POSITION_Y
 
@@ -141,7 +148,6 @@ export function init (canvasRef: HTMLCanvasElement | null) {
       }
     })
 
-    fitModelToViewport(model, window.innerHeight, window.innerWidth)
     scene.add(model)
   })
 
@@ -168,6 +174,7 @@ export function init (canvasRef: HTMLCanvasElement | null) {
     asciiMaterial!
   )
 
+  resize(window.innerHeight, window.innerWidth)
 
   postScene.add(quad)
 
@@ -182,10 +189,14 @@ export function init (canvasRef: HTMLCanvasElement | null) {
     const zoom = 1 + ((modelAreaScrollPercent > 0.4)
       ? (modelAreaScrollPercent - 0.4)
       : 0) * 10
-
     if (model) {
       model.rotation.z = -rotation
       model.rotation.x = -rotation
+
+      const center = getModelCenter()
+      camera.position.x = center.x
+      camera.position.y = center.y + INITIAL_POSITION_Y
+      camera.position.z = center.z + INITIAL_POSITION_Z
     }
     camera.zoom = zoom
     camera.updateProjectionMatrix()
