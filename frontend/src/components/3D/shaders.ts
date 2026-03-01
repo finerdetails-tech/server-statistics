@@ -11,7 +11,10 @@ export const fragmentShader = `
 
     // Center of that cell
     vec2 cellCenter = (cellCoord + 0.5) * cellSize;
-    vec2 sceneUV = cellCenter / resolution;
+
+    // Snap sceneUV to the nearest texel to avoid rounding artifacts
+    vec2 texelSize = 1.0 / resolution;
+    vec2 sceneUV = floor(cellCenter / texelSize) * texelSize / resolution;
 
     // Sample the rasterized scene
     vec3 color = texture(sceneTexture, sceneUV).rgb;

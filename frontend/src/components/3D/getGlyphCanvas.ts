@@ -1,8 +1,20 @@
-function getGlyphCanvas () {
-  const chars = "  .,-=+:;cba!?123456789$W#@"
-  const glyphCount = chars.length
+const CHARS = " .,-=+:;cba!?123456789$W#@"
 
-  const glyphSize = 32
+export function getGlyphCount () {
+  return CHARS.length
+}
+
+export async function getGlyphCanvas () {
+  const font = new FontFace(
+    "GoogleSansCode",
+    'url("/fonts/GoogleSansCode-VariableFont_wght.ttf")'
+  )
+  await font.load()
+  document.fonts.add(font)
+
+  const glyphCount = getGlyphCount()
+
+  const glyphSize = 128
   const columns = glyphCount
   const rows = 1
 
@@ -12,21 +24,19 @@ function getGlyphCanvas () {
 
   const ctx = canvas.getContext("2d")
 
-  ctx.fillStyle = "black"
+  ctx.fillStyle = "transparent"
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   ctx.fillStyle = "white"
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
-  ctx.font = `${glyphSize * 0.8}px monospace`
+  ctx.font = `${glyphSize * 0.8}px GoogleSansCode`
 
   for (let i = 0; i < glyphCount; i++) {
     const x = i * glyphSize + glyphSize / 2
     const y = glyphSize / 2
-    ctx.fillText(chars[i], x, y)
+    ctx.fillText(CHARS[i], x, y)
   }
 
   return canvas
 }
-
-export default getGlyphCanvas

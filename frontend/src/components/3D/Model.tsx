@@ -1,5 +1,5 @@
 import {
-  useEffect, useRef
+  useEffect, useRef, useState
 } from 'preact/compat'
 import { debounce } from 'throttle-debounce'
 import {
@@ -26,14 +26,19 @@ function Model ({
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const placeholderRef = useRef<HTMLDivElement>(null)
+  const [ hasInit, setHasInit ] = useState(false)
 
   useEffect(() => {
     console.warn('Initializing 3D scene')
-    init(canvasRef.current)
+    init(canvasRef.current).then(() => {
+      setHasInit(true)
+    })
   }, [])
 
   useEffect(() => {
-    debouncedResize(viewportHeight, viewportWidth)
+    if (hasInit) {
+      debouncedResize(viewportHeight, viewportWidth)
+    }
   }, [ viewportHeight, viewportWidth, debouncedResize ])
 
   useEffect(() => {

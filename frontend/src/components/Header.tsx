@@ -3,9 +3,12 @@ function Header () {
     <header
       style={{
         alignItems: 'center',
+        backgroundColor: 'transparent',
         display: 'flex',
+        fontFamily: "GoogleSansCode, monospace",
         fontSize: '1.5rem',
-        justifyContent: 'center',
+        fontWeight: '300',
+        justifyContent: 'left',
         padding: '1rem',
         width: 'inherit'
       }}>

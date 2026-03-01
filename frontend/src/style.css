@@ -1,4 +1,12 @@
+@font-face {
+  font-family: "GoogleSansCode";
+  src: url("/fonts/GoogleSansCode-VariableFont_wght.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
+  background-color: black;
   margin: 0;
   display: grid;
   max-height: 100vh;
