@@ -30,7 +30,7 @@ export async function getGlyphCanvas () {
   ctx.fillStyle = "white"
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
-  ctx.font = `${glyphSize * 0.8}px GoogleSansCode`
+  ctx.font = `${glyphSize}px GoogleSansCode`
 
   for (let i = 0; i < glyphCount; i++) {
     const x = i * glyphSize + glyphSize / 2
