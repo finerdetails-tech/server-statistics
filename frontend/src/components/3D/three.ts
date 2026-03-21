@@ -211,10 +211,14 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
   function animate () {
     const modelAreaScrollPercent = getModelAreaScrollPercent()
     const portViewRotation = 1.563
+
+    const maxZoom = 100
+
+    const steepness = 15
+    const curve = 1 / (1 + Math.exp(-steepness * (modelAreaScrollPercent - 0.75)))
+    const zoom = Math.min(1 + (curve * 100), maxZoom)
     const rotation = Math.min(modelAreaScrollPercent * modelAreaScrollPercent * Math.PI * 2, portViewRotation)
-    const zoom = Math.min(1 + ((modelAreaScrollPercent > 0.2)
-      ? (modelAreaScrollPercent - 0.2)
-      : 0) * 10 * Math.pow(modelAreaScrollPercent, 2), 30)
+
     if (model) {
       model.rotation.z = -rotation
       model.rotation.x = -rotation
@@ -224,9 +228,10 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
       camera.position.y = center.y + INITIAL_POSITION_Y
       camera.position.z = center.z + INITIAL_POSITION_Z
     }
+
     camera.zoom = zoom
     camera.updateProjectionMatrix()
-    const zoomedCellSize = cellSize * Math.round(zoom)
+    const zoomedCellSize = cellSize * Math.round(Math.min(zoom, 10))
     asciiMaterial.uniforms.cellSize.value.set(zoomedCellSize, zoomedCellSize)
 
     renderer.setRenderTarget(renderTarget)
