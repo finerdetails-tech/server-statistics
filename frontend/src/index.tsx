@@ -21,7 +21,7 @@ export function App () {
   const metricsContainerGap = remToPx(2)
 
   const {
-    headerHeight, isLandscape, metricHeight, metricsContainerRef, metricsContainerRowCount, metricWidth, SCROLLBAR_WIDTH, viewportHeight, viewportWidth
+    headerHeight, isLandscape, metricHeight, metricsContainerRef, metricsContainerRowCount, metricWidth, SCROLLBAR_WIDTH
   } = useDimensions(metricsContainerGap)
 
   useHorizontalScrolling(isLandscape, scrollContainerRef)
@@ -49,8 +49,6 @@ export function App () {
           headerHeight={headerHeight}
           isLandscape={isLandscape}
           SCROLLBAR_WIDTH={SCROLLBAR_WIDTH}
-          viewportHeight={viewportHeight}
-          viewportWidth={viewportWidth}
         />
         <MetricsContainer
           gap={metricsContainerGap}

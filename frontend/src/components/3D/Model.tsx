@@ -1,45 +1,38 @@
 import {
-  useEffect, useRef, useState
+  useEffect, useRef
 } from 'preact/compat'
-import { debounce } from 'throttle-debounce'
 import {
-  init, resize, setScrollElements
+  cleanup, init, resize, setScrollElements
 } from './three'
-
-const debouncedResize = debounce(250, (viewportHeight: number, viewportWidth: number) => resize(viewportHeight, viewportWidth))
 
 function Model ({
   headerHeight,
   isLandscape,
   SCROLLBAR_WIDTH,
-  scrollContainerRef,
-  viewportHeight,
-  viewportWidth
+  scrollContainerRef
 }: {
   isLandscape: boolean,
   headerHeight: number,
   SCROLLBAR_WIDTH: number,
-  viewportHeight: number,
-  viewportWidth: number,
   scrollContainerRef: React.RefObject<HTMLElement>
 }) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const placeholderRef = useRef<HTMLDivElement>(null)
-  const [ hasInit, setHasInit ] = useState(false)
 
   useEffect(() => {
     console.warn('Initializing 3D scene')
-    init(canvasRef.current).then(() => {
-      setHasInit(true)
-    })
+    const onResize = () => {
+      resize(window.innerHeight, window.innerWidth)
+    }
+    window.addEventListener('resize', onResize)
+    init(canvasRef.current)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      cleanup()
+    }
   }, [])
 
-  useEffect(() => {
-    if (hasInit) {
-      debouncedResize(viewportHeight, viewportWidth)
-    }
-  }, [ viewportHeight, viewportWidth, debouncedResize ])
 
   useEffect(() => {
     if (scrollContainerRef.current) {

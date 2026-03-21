@@ -18,6 +18,7 @@ let model: THREE.Group | null = null
 let renderTarget: THREE.WebGLRenderTarget | null = null
 let asciiMaterial: THREE.ShaderMaterial | null = null
 let scale: number | null = null
+let modelBox: THREE.Box3 | null = null
 
 const minCellSize = 3
 const defaultCellSize = 4
@@ -107,12 +108,11 @@ function getModelCenter (box?: THREE.Box3): THREE.Vector3 {
   return newBox.getCenter(new THREE.Vector3())
 }
 
-function getModelScale (viewportHeight: number, viewportWidth: number, box?: THREE.Box3): number {
+function getModelScale (viewportHeight: number, viewportWidth: number, box: THREE.Box3): number {
   if (!model) {
     return 1
   }
-  const newBox = box ?? new THREE.Box3().setFromObject(model)
-  const size = newBox.getSize(new THREE.Vector3())
+  const size = box.getSize(new THREE.Vector3())
   const maxDim = Math.max(size.x, size.y, size.z)
   const minViewportDim = Math.min(viewportWidth, viewportHeight)
   const modelDesiredSizeInWorldUnits = pixelsToWorldUnits(minViewportDim * 0.8)
@@ -121,15 +121,24 @@ function getModelScale (viewportHeight: number, viewportWidth: number, box?: THR
 }
 
 function fitModelToViewport (model: THREE.Group, viewportHeight: number, viewportWidth: number) {
-  const box = new THREE.Box3().setFromObject(model)
-  const newScale = getModelScale(viewportHeight, viewportWidth, box)
-  model.scale.set(newScale, newScale, newScale)
+  if (!modelBox) {
+    modelBox = new THREE.Box3().setFromObject(model)
+    const newScale = getModelScale(viewportHeight, viewportWidth, modelBox)
+    model.scale.set(newScale, newScale, newScale)
 
-  const center = getModelCenter(box)
-  model.position.x = -center.x * newScale
-  model.position.y = -center.y * newScale
-  model.position.z = -center.z * newScale
-  scale = newScale
+    const center = getModelCenter(modelBox)
+    model.position.x = -center.x * newScale
+    model.position.y = -center.y * newScale
+    model.position.z = -center.z * newScale
+    scale = newScale
+  }
+}
+
+export function cleanup () {
+  renderer.setAnimationLoop(null)
+  renderer.dispose()
+  renderTarget?.dispose()
+  asciiMaterial?.dispose()
 }
 
 
@@ -138,7 +147,6 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
   camera = new THREE.OrthographicCamera()
 
   renderer = new THREE.WebGLRenderer({ canvas: canvasRef! })
-  renderer.setSize(window.innerWidth, window.innerHeight)
 
   camera.position.z = INITIAL_POSITION_Z
   camera.position.y = INITIAL_POSITION_Y
@@ -240,5 +248,6 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
     renderer.setRenderTarget(null)
     renderer.render(postScene, postCamera)
   }
+
   renderer.setAnimationLoop(animate)
 }
