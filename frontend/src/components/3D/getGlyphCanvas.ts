@@ -1,4 +1,4 @@
-const CHARS = " .,-=+:;cba!?123456789$W#@"
+const CHARS = " .,-:;+*!?12368$W#@"
 
 export function getGlyphCount () {
   return CHARS.length
