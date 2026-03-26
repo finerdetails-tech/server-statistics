@@ -201,6 +201,7 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
       cellSize: { value: new THREE.Vector2(cellSize, cellSize) },
       glyphAtlas: { value: glyphTexture },
       glyphCount: { value: getGlyphCount() },
+      glyphDarkness: { value: 1 },
       resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
       sceneTexture: { value: renderTarget.texture }
     },
@@ -223,9 +224,17 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
     const maxZoom = 100
 
     const steepness = 15
-    const curve = 1 / (1 + Math.exp(-steepness * (modelAreaScrollPercent - 0.75)))
-    const zoom = Math.min(1 + (curve * 100), maxZoom)
+    const getCurveAtPercentage = (percentage: number) => 1 / (1 + Math.exp(-steepness * (percentage - 0.75)))
+    const getZoomAtPercentage = (percent: number) => Math.min(1 + (getCurveAtPercentage(percent) * 100), maxZoom)
+    const getZoomedCellSizeAtPercentage = (percent: number) => cellSize * Math.round(Math.min(getZoomAtPercentage(percent), 10))
+
+    const zoom = getZoomAtPercentage(modelAreaScrollPercent)
+    const maxZoomedCellSize = getZoomedCellSizeAtPercentage(1)
+
     const rotation = Math.min(modelAreaScrollPercent * modelAreaScrollPercent * Math.PI * 2, portViewRotation)
+
+    const zoomedCellSize = getZoomedCellSizeAtPercentage(modelAreaScrollPercent)
+    const glyphDarkness = Math.max(1 - (zoomedCellSize / maxZoomedCellSize), 0.03)
 
     if (model) {
       model.rotation.z = -rotation
@@ -239,8 +248,9 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
 
     camera.zoom = zoom
     camera.updateProjectionMatrix()
-    const zoomedCellSize = cellSize * Math.round(Math.min(zoom, 10))
+
     asciiMaterial.uniforms.cellSize.value.set(zoomedCellSize, zoomedCellSize)
+    asciiMaterial.uniforms.glyphDarkness.value = glyphDarkness
 
     renderer.setRenderTarget(renderTarget)
     renderer.render(scene, camera)

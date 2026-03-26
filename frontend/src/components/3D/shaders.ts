@@ -4,6 +4,7 @@ export const fragmentShader = `
   uniform vec2 resolution;
   uniform vec2 cellSize;
   uniform float glyphCount;
+  uniform float glyphDarkness;
 
   void main() {
     // Which ASCII cell are we in?
@@ -32,8 +33,9 @@ export const fragmentShader = `
     float glyphX = mod(index, glyphCount);
     float glyphY = 0.0; // Single row atlas
     vec2 glyphUV = vec2((glyphX + localUV.x) / glyphCount, localUV.y);
-
-    gl_FragColor = texture(glyphAtlas, glyphUV);
+    
+    vec4 glyph = texture(glyphAtlas, glyphUV);
+    gl_FragColor = vec4(glyph.rgb * glyphDarkness, glyph.a);
   }
 `
 
