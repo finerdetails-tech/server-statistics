@@ -232,8 +232,8 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
 
     const rotation = Math.min(modelAreaScrollPercent * modelAreaScrollPercent * Math.PI * 2, portViewRotation)
 
-    const zoomedCellSize = getZoomedCellSizeAtPercentage(modelAreaScrollPercent)
-    const glyphDarkness = Math.max(1 - (zoomedCellSize / maxZoomedCellSize), 0.03)
+    const zoomedCellSize = Math.max(getZoomedCellSizeAtPercentage(modelAreaScrollPercent), defaultCellSize)
+    const glyphDarkness = Math.max(1 - ((zoomedCellSize - defaultCellSize) / (maxZoomedCellSize - defaultCellSize)), 0.03)
 
     if (model) {
       model.rotation.z = -rotation
