@@ -240,7 +240,10 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
       model.rotation.x = -rotation
 
       const center = getModelCenter()
-      camera.position.x = center.x
+      const maxCameraXmovement = modelBox.getSize(new THREE.Vector3()).x * 0.012
+      const cameraXmovement = Math.min(getCurveAtPercentage(modelAreaScrollPercent) * 100, maxCameraXmovement)
+
+      camera.position.x = center.x + cameraXmovement
       camera.position.y = center.y + INITIAL_POSITION_Y
       camera.position.z = center.z + INITIAL_POSITION_Z
     }
