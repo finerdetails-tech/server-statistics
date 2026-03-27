@@ -20,8 +20,7 @@ let asciiMaterial: THREE.ShaderMaterial | null = null
 let scale: number | null = null
 let modelBox: THREE.Box3 | null = null
 
-const minCellSize = 3
-const defaultCellSize = 4
+const defaultCellSize = 6
 const maxCellSize = 32
 const postScene = new THREE.Scene()
 
@@ -51,7 +50,7 @@ export function setPlaceholderElement (element: HTMLElement) {
 
 function getCellSize () {
   const scaledCellSize = Math.round(defaultCellSize * scale)
-  const cellSize = Math.max(minCellSize, Math.min(maxCellSize, scaledCellSize))
+  const cellSize = Math.min(maxCellSize, scaledCellSize)
   return cellSize
 }
 
@@ -226,7 +225,7 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
     const steepness = 15
     const getCurveAtPercentage = (percentage: number) => 1 / (1 + Math.exp(-steepness * (percentage - 0.75)))
     const getZoomAtPercentage = (percent: number) => Math.min(1 + (getCurveAtPercentage(percent) * 100), maxZoom)
-    const getZoomedCellSizeAtPercentage = (percent: number) => cellSize * Math.round(Math.min(getZoomAtPercentage(percent), 10))
+    const getZoomedCellSizeAtPercentage = (percent: number) => Math.round(cellSize * Math.min(getZoomAtPercentage(percent), 10))
 
     const zoom = getZoomAtPercentage(modelAreaScrollPercent)
     const maxZoomedCellSize = getZoomedCellSizeAtPercentage(1)
