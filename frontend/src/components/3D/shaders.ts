@@ -5,6 +5,11 @@ export const fragmentShader = `
   uniform vec2 cellSize;
   uniform float glyphCount;
   uniform float glyphDarkness;
+  uniform float randomness; // percentage of randomness in glyph selection (0.0 to 1.0)
+
+  float random(vec2 seed) {
+    return fract(sin(dot(seed, vec2(12.9898, 78.233))) * 43758.5453123);
+  }
 
   void main() {
     // Which ASCII cell are we in?
@@ -24,7 +29,15 @@ export const fragmentShader = `
     float luma = dot(color, vec3(0.299, 0.587, 0.114));
 
     // Pick a glyph
-    float index = floor(luma * glyphCount);
+    float index = min(floor(luma * glyphCount), glyphCount - 1.0);
+
+    // Apply randomness
+    if (glyphCount > 1.0 && randomness > 0.0) {
+      if (random(cellCoord) < randomness) {
+        float pick = step(0.5, random(cellCoord + vec2(19.19, 73.73)));
+        index = mix(10.0, 14.0, pick);
+      }
+    }
 
     // Position inside the cell
     vec2 localUV = fract(gl_FragCoord.xy / cellSize);
@@ -33,7 +46,7 @@ export const fragmentShader = `
     float glyphX = mod(index, glyphCount);
     float glyphY = 0.0; // Single row atlas
     vec2 glyphUV = vec2((glyphX + localUV.x) / glyphCount, localUV.y);
-    
+
     vec4 glyph = texture(glyphAtlas, glyphUV);
     gl_FragColor = vec4(glyph.rgb * glyphDarkness, glyph.a);
   }

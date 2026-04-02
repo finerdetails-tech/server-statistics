@@ -1,4 +1,4 @@
-const CHARS = " .,-:;+*!?12368$W#@"
+const CHARS = " .,-:;+*!?12360$W#@"
 
 export function getGlyphCount () {
   return CHARS.length
