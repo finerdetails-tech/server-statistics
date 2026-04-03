@@ -5,7 +5,8 @@ export const fragmentShader = `
   uniform vec2 cellSize;
   uniform float glyphCount;
   uniform float glyphDarkness;
-  uniform float randomness; // percentage of randomness in glyph selection (0.0 to 1.0)
+  uniform float randomness;
+  uniform float randomSeed; // Updating glyphs on scroll
 
   float random(vec2 seed) {
     return fract(sin(dot(seed, vec2(12.9898, 78.233))) * 43758.5453123);
@@ -32,9 +33,9 @@ export const fragmentShader = `
     float index = min(floor(luma * glyphCount), glyphCount - 1.0);
 
     // Apply randomness
-    if (glyphCount > 1.0 && randomness > 0.0) {
-      if (random(cellCoord) < randomness) {
-        float pick = step(0.5, random(cellCoord + vec2(19.19, 73.73)));
+    if (glyphCount > 1.0 && randomness > 0.0 && index > 0.0) {
+      if (random(cellCoord + vec2(randomSeed)) < randomness) {
+        float pick = step(0.5, random(cellCoord + vec2(19.19, 73.73) + vec2(randomSeed)));
         index = mix(10.0, 14.0, pick);
       }
     }

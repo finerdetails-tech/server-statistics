@@ -19,6 +19,8 @@ let renderTarget: THREE.WebGLRenderTarget | null = null
 let asciiMaterial: THREE.ShaderMaterial | null = null
 let scale: number | null = null
 let modelBox: THREE.Box3 | null = null
+let lastSeedUpdate = 0
+const SEED_THROTTLE_MS = 150
 
 const defaultCellSize = 6
 const maxCellSize = 32
@@ -202,6 +204,7 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
       glyphCount: { value: getGlyphCount() },
       glyphDarkness: { value: 1 },
       randomness: { value: 0 },
+      randomSeed: { value: 0 },
       resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
       sceneTexture: { value: renderTarget.texture }
     },
@@ -238,7 +241,7 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
     const zoomedCellSize = Math.max(getZoomedCellSizeAtPercentage(modelAreaScrollPercent), defaultCellSize)
     const maxGlyphDarkness = 0.05
     const glyphDarkness = Math.max(1 - ((zoomedCellSize - defaultCellSize) / (maxZoomedCellSize - defaultCellSize)), maxGlyphDarkness)
-    const glyphRandomnessStartPercentage = 0.5
+    const glyphRandomnessStartPercentage = 0.2
     const delayedRandomnessPercent = clamp01((modelAreaScrollPercent - glyphRandomnessStartPercentage) / (1 - glyphRandomnessStartPercentage))
     const delayedZoomedCellSize = Math.max(getZoomedCellSizeAtPercentage(delayedRandomnessPercent), defaultCellSize)
     const delayedGlyphDarkness = Math.max(
@@ -252,6 +255,12 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
       model.rotation.z = -restrictedRotation
       model.rotation.x = -restrictedRotation
       asciiMaterial.uniforms.randomness.value = 0
+
+      const now = performance.now()
+      if (now - lastSeedUpdate > SEED_THROTTLE_MS) {
+        asciiMaterial.uniforms.randomSeed.value = modelAreaScrollPercent * 1000
+        lastSeedUpdate = now
+      }
 
       const center = getModelCenter()
       const maxCameraXmovement = modelBox.getSize(new THREE.Vector3()).x * 0.012
