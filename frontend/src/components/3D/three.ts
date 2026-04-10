@@ -263,7 +263,10 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
       }
 
       const center = getModelCenter()
-      const maxCameraXmovement = modelBox.getSize(new THREE.Vector3()).x * 0.012
+      const modelBoxSizeX = modelBox.getSize(new THREE.Vector3()).x
+      const xMovementFactor = 0.0225
+      const scaledModelBoxSizeX = modelBoxSizeX * scale
+      const maxCameraXmovement = scaledModelBoxSizeX * xMovementFactor
       const cameraXmovement = Math.min(getZoomCurveAtPercentage(modelAreaScrollPercent) * 100, maxCameraXmovement)
 
       camera.position.x = center.x + cameraXmovement
