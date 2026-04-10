@@ -98,7 +98,7 @@ function pixelsToWorldUnits (pixels: number): number {
   const frustumSize = 100
   const canvasHeight = renderer.domElement.height
 
-  const pixelsPerWorldUnit = (canvasHeight / frustumSize) * camera.zoom
+  const pixelsPerWorldUnit = canvasHeight / frustumSize
 
   return pixels / pixelsPerWorldUnit
 }
@@ -124,15 +124,15 @@ function getModelScale (viewportHeight: number, viewportWidth: number, box: THRE
 function fitModelToViewport (model: THREE.Group, viewportHeight: number, viewportWidth: number) {
   if (!modelBox) {
     modelBox = new THREE.Box3().setFromObject(model)
-    const newScale = getModelScale(viewportHeight, viewportWidth, modelBox)
-    model.scale.set(newScale, newScale, newScale)
-
-    const center = getModelCenter(modelBox)
-    model.position.x = -center.x * newScale
-    model.position.y = -center.y * newScale
-    model.position.z = -center.z * newScale
-    scale = newScale
   }
+  const newScale = getModelScale(viewportHeight, viewportWidth, modelBox)
+  model.scale.set(newScale, newScale, newScale)
+
+  const center = getModelCenter(modelBox)
+  model.position.x = -center.x * newScale
+  model.position.y = -center.y * newScale
+  model.position.z = -center.z * newScale
+  scale = newScale
 }
 
 export function cleanup () {
