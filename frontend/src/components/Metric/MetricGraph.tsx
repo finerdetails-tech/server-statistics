@@ -5,7 +5,7 @@ import {
   scaleLinear, scaleTime
 } from '@visx/scale'
 import {
-  extent, max
+  extent, max, min
 } from '@visx/vendor/d3-array'
 import {
   useMemo, useRef, useState
@@ -56,6 +56,10 @@ function MetricGraph ({
   const adjustedMetricHeight = metricHeight - (2 * surroundingPadding)
 
   const xMax = metricWidth - (2 * surroundingPadding)
+
+  const chartLeftOffset = 2 * surroundingPadding
+  const svgWidth = xMax - (surroundingPadding * 2)
+  const innerXMax = svgWidth - chartLeftOffset
   const yMax = 0.8 * adjustedMetricHeight - topChartBottomMargin
   const yBrushMax = adjustedMetricHeight - yMax - topChartBottomMargin
 
@@ -85,13 +89,13 @@ function MetricGraph ({
   const dateScale = useMemo(
     () => scaleTime<number>({
       domain: extent(displayData, getDate) as [Date, Date],
-      range: [ 0, xMax ]
+      range: [ 0, innerXMax ]
     }),
-    [ xMax, displayData ]
+    [ innerXMax, displayData ]
   )
   const metricScale = useMemo(
     () => scaleLinear<number>({
-      domain: [ 0, max(displayData, getMetricValue) || 0 ],
+      domain: [ min(displayData, getMetricValue) || 0, max(displayData, getMetricValue) || 0 ],
       nice: true,
       range: [ yMax, 0 ]
     }),
@@ -100,9 +104,9 @@ function MetricGraph ({
   const brushDateScale = useMemo(
     () => scaleTime<number>({
       domain: extent(metricData, getDate) as [Date, Date],
-      range: [ 0, xMax ]
+      range: [ 0, innerXMax ]
     }),
-    [ xMax, metricData ]
+    [ innerXMax, metricData ]
   )
   const brushMetricScale = useMemo(
     () => scaleLinear({
@@ -130,16 +134,18 @@ function MetricGraph ({
   )
 
   const containerWidth = xMax
+  const containerHeight = yMax
 
   const patternLineWidth = 2
-  const numTicks = Math.floor(containerWidth / remToPx(4))
+  const numTicksX = Math.floor(containerWidth / remToPx(4))
 
   const {
     backgroundSizeUnit,
+    tickSpacing,
     xOffset,
     yOffset
   } = useMemo(() => {
-    const ticks = dateScale.ticks(numTicks)
+    const ticks = dateScale.ticks(numTicksX)
     if (ticks.length < 2) return null
 
     const firstTickPos = dateScale(ticks[0]) || 0
@@ -152,54 +158,60 @@ function MetricGraph ({
     const yOffset = ((yMax + surroundingPadding) % backgroundSizeUnit) - (patternLineWidth / 2)
     return {
       backgroundSizeUnit,
+      tickSpacing,
       xOffset,
       yOffset
     }
 
-  }, [ dateScale, numTicks ])
+  }, [ dateScale, numTicksX ])
+
+  const numTicksY = Math.floor(containerHeight / tickSpacing)
 
 
   return (
     <div
       style={{
+        alignItems: 'center',
         backgroundColor: 'transparent',
         backgroundImage: `linear-gradient(${backgroundColor} ${patternLineWidth}px, transparent ${patternLineWidth}px), linear-gradient(to right, ${backgroundColor} ${patternLineWidth}px, transparent ${patternLineWidth}px)`,
         backgroundPosition: `${xOffset}px ${yOffset}px`,
         backgroundSize: `${backgroundSizeUnit}px ${backgroundSizeUnit}px`,
-        height: adjustedMetricHeight,
+        display: 'flex',
+        height: adjustedMetricHeight + (2 * surroundingPadding),
+        justifyContent: 'left',
         justifySelf: 'center',
-        padding: surroundingPadding,
         width: containerWidth
       }}>
       <svg
         display="block"
-        width={xMax} height={adjustedMetricHeight}>
+        width={xMax - (surroundingPadding * 2)} height={adjustedMetricHeight}>
         <rect
-          x={0} y={0} width={xMax} height={adjustedMetricHeight} fill={`url(#${GRADIENT_ID})`} rx={14} />
+          x={0} y={0} width={xMax - (surroundingPadding * 2)} height={adjustedMetricHeight - (surroundingPadding * 2)} fill={`url(#${GRADIENT_ID})`} rx={14} />
         <AreaChart
           metricData={displayData}
-          yMax={yMax}
           xScale={dateScale}
           yScale={metricScale}
           strokeColor={accentColor}
-          numTicks={numTicks}
+          left={2 * surroundingPadding} top={surroundingPadding}
+          numTicksX={numTicksX}
+          numTicksY={numTicksY}
         />
         <AreaChart
           hideBottomAxis
           hideLeftAxis
           metricData={brushData}
-          yMax={yBrushMax}
           xScale={brushDateScale}
           yScale={brushMetricScale}
           margin={brushMargin}
           top={yMax + topChartBottomMargin}
+          left={2 * surroundingPadding}
           strokeColor={accentColor}
           isAxesEnabled={false}
         >
           <CustomBrush
             xScale={brushDateScale}
             yScale={brushMetricScale}
-            width={xMax}
+            width={innerXMax}
             height={yBrushMax}
             margin={brushMargin}
             innerRef={brushRef}

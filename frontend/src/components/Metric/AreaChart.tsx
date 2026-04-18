@@ -1,10 +1,10 @@
 import type { AxisScale } from '@visx/axis'
 import {
-  AxisBottom, AxisLeft
+  AxisLeft, AxisTop
 } from '@visx/axis'
 import { curveMonotoneX } from '@visx/curve'
 import { Group } from '@visx/group'
-import { AreaClosed } from '@visx/shape'
+import { LinePath } from '@visx/shape'
 import type { ComponentChildren } from 'preact'
 import { useCallback } from 'preact/compat'
 import type { MetricData } from 'types'
@@ -13,9 +13,9 @@ import {
 } from '../../utils'
 
 const axisColor = '#F5F7F2'
-const axisBottomTickLabelProps = {
+const axisTopTickLabelProps = {
   fill: axisColor,
-  fontFamily: 'Arial',
+  fontFamily: 'GoogleSansCode, monospace',
   fontSize: 10,
   style: {userSelect: 'none'},
   textAnchor: 'middle' as const
@@ -24,7 +24,7 @@ const axisLeftTickLabelProps = {
   dx: '-0.25em',
   dy: '0.25em',
   fill: axisColor,
-  fontFamily: 'Arial',
+  fontFamily: 'GoogleSansCode, monospace',
   fontSize: 10,
   style: {userSelect: 'none'},
   textAnchor: 'end' as const
@@ -64,18 +64,17 @@ function AreaChart ({
   left,
   margin,
   metricData,
-  numTicks,
+  numTicksX,
+  numTicksY,
   strokeColor,
   top,
   xScale,
-  yMax,
   yScale
 }: {
   metricData: MetricData[],
   strokeColor: string
   xScale: AxisScale<number>
   yScale: AxisScale<number>
-  yMax: number
   margin?: {
     top: number;
     right: number;
@@ -87,7 +86,8 @@ function AreaChart ({
   top?: number
   left?: number
   children?: ComponentChildren
-  numTicks?: number,
+  numTicksX?: number,
+  numTicksY?: number
   isAxesEnabled?: boolean
 }) {
 
@@ -97,11 +97,10 @@ function AreaChart ({
   return (
     <Group
       left={left || margin?.left || 0} top={top || margin?.top || 0}>
-      <AreaClosed<MetricData>
+      <LinePath<MetricData>
         data={metricData}
         x={xAccessor}
         y={yAccessor}
-        yScale={yScale}
         strokeWidth={2}
         stroke={strokeColor}
         fill="transparent"
@@ -109,21 +108,22 @@ function AreaChart ({
       />
       {isAxesEnabled && (
         <>
-          <AxisBottom
-            top={yMax}
+          <AxisTop
             scale={xScale}
-            numTicks={numTicks}
+            numTicks={numTicksX}
             stroke={axisColor}
+            strokeWidth={2}
             tickStroke={axisColor}
-            tickLabelProps={axisBottomTickLabelProps}
+            tickLabelProps={axisTopTickLabelProps}
             tickFormat={dynamicTimeFormatter}
             tickLineProps={tickLineProps}
           />
 
           <AxisLeft
             scale={yScale}
-            numTicks={5}
+            numTicks={numTicksY}
             stroke={axisColor}
+            strokeWidth={2}
             tickStroke={axisColor}
             tickLineProps={tickLineProps}
             tickLabelProps={axisLeftTickLabelProps}
