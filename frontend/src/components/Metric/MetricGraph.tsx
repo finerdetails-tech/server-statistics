@@ -178,15 +178,14 @@ function MetricGraph ({
         backgroundSize: `${backgroundSizeUnit}px ${backgroundSizeUnit}px`,
         display: 'flex',
         height: adjustedMetricHeight + (2 * surroundingPadding),
-        justifyContent: 'left',
         justifySelf: 'center',
         width: containerWidth
       }}>
       <svg
         display="block"
-        width={xMax - (surroundingPadding * 2)} height={adjustedMetricHeight}>
+        width={xMax} height={adjustedMetricHeight}>
         <rect
-          x={0} y={0} width={xMax - (surroundingPadding * 2)} height={adjustedMetricHeight - (surroundingPadding * 2)} fill={`url(#${GRADIENT_ID})`} rx={14} />
+          x={0} y={0} width={xMax} height={adjustedMetricHeight - (surroundingPadding * 2)} fill={`url(#${GRADIENT_ID})`} rx={14} />
         <AreaChart
           metricData={displayData}
           xScale={dateScale}
