@@ -4,7 +4,11 @@ export function getGlyphCount () {
   return CHARS.length
 }
 
-export async function getGlyphCanvas () {
+let cachedCanvas: HTMLCanvasElement | null = null
+
+export async function getGlyphCanvas (): Promise<HTMLCanvasElement> {
+  if (cachedCanvas) return cachedCanvas
+
   const font = new FontFace(
     "GoogleSansCode",
     'url("/fonts/GoogleSansCode-VariableFont_wght.ttf")'
@@ -15,14 +19,13 @@ export async function getGlyphCanvas () {
   const glyphCount = getGlyphCount()
 
   const glyphSize = 128
-  const columns = glyphCount
-  const rows = 1
 
   const canvas = document.createElement("canvas")
-  canvas.width = columns * glyphSize
-  canvas.height = rows * glyphSize
+  canvas.width = glyphCount * glyphSize
+  canvas.height = glyphSize
 
   const ctx = canvas.getContext("2d")
+  if (!ctx) throw new Error("Could not get 2D context for glyph atlas canvas")
 
   ctx.fillStyle = "transparent"
   ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -33,10 +36,9 @@ export async function getGlyphCanvas () {
   ctx.font = `${glyphSize}px GoogleSansCode`
 
   for (let i = 0; i < glyphCount; i++) {
-    const x = i * glyphSize + glyphSize / 2
-    const y = glyphSize / 2
-    ctx.fillText(CHARS[i], x, y)
+    ctx.fillText(CHARS[i], i * glyphSize + glyphSize / 2, glyphSize / 2)
   }
 
+  cachedCanvas = canvas
   return canvas
 }
