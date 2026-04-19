@@ -3,7 +3,6 @@ import {
   useMemo, useRef
 } from 'preact/hooks'
 import {listCurrentAndParentElements} from '../utils'
-import useMetricsConfig from './useMetricsConfig'
 
 function useDimensions (metricsContainerGap: number) {
   const {
@@ -14,24 +13,21 @@ function useDimensions (metricsContainerGap: number) {
     ? 2
     : 1
 
-  const { metricsConfigList } = useMetricsConfig()
-
-  const landScapeColumns = Math.ceil(metricsConfigList.length / metricsContainerRowCount)
-
-
   const metricsContainerRef = useRef<HTMLDivElement>(null)
 
   const isLandscape = useMemo(() => {
     return viewportWidth > viewportHeight
   }, [ viewportWidth, viewportHeight ])
 
-  const totalGap = {
-    x: (isLandscape
-      ? ((landScapeColumns - 1) * metricsContainerGap)
-      : 0),
-    y: (isLandscape
-      ? ((Math.max(metricsContainerRowCount, 1) - 1) * metricsContainerGap)
-      : ((metricsConfigList.length - 1) * metricsContainerGap))
+  const getTotalGap = (fittingMetricsCount?: number) => {
+    return {
+      x: (isLandscape
+        ? ((fittingMetricsCount! - 1) * metricsContainerGap)
+        : 0),
+      y: (isLandscape
+        ? ((Math.max(metricsContainerRowCount, 1) - 1) * metricsContainerGap)
+        : ((fittingMetricsCount! - 1) * metricsContainerGap))
+    }
   }
 
   const SCROLLBAR_WIDTH = useMemo(() => {
@@ -81,26 +77,24 @@ function useDimensions (metricsContainerGap: number) {
     const heightToWidthRatio = 2 / 3
 
     if (isLandscape) {
-      const availableHeight = viewportHeight - parentHeightStyling - headerHeight - totalGap.y - SCROLLBAR_WIDTH// TODO: TÄSSÄ ON LIIKAA KORKEUTTA
-      const availableWidth = Math.max(viewportWidth - parentWidthStyling - totalGap.x, 100)
+      const totalGapY = getTotalGap().y
+      const availableHeight = viewportHeight - parentHeightStyling - headerHeight - totalGapY - SCROLLBAR_WIDTH
+      const availableWidth = Math.max(viewportWidth - parentWidthStyling - SCROLLBAR_WIDTH, 100)
 
-      metricHeight = Math.max((availableHeight / metricsContainerRowCount), 100)
+      metricHeight = Math.max(((availableHeight) / metricsContainerRowCount), 100)
       const targetWidth = metricHeight / heightToWidthRatio
-      const totalLeftOverWidth = availableWidth % targetWidth
-      const fittingMetricsCount = Math.floor(availableWidth / targetWidth)
-      const leftOverWidth = totalLeftOverWidth / fittingMetricsCount
 
-      metricWidth = targetWidth + leftOverWidth
-
+      const fittingMetricsCount = Math.max(Math.floor((availableWidth + metricsContainerGap) / (targetWidth + metricsContainerGap)), 1)
+      const totalGapX = getTotalGap(fittingMetricsCount).x
+      metricWidth = (availableWidth - totalGapX) / fittingMetricsCount
     } else {
       metricWidth = Math.max(viewportWidth - parentWidthStyling - SCROLLBAR_WIDTH, 100)
 
-      const availableHeight = viewportHeight - parentHeightStyling - headerHeight - totalGap.y
+      const availableHeight = viewportHeight - parentHeightStyling - headerHeight
       const targetHeight = metricWidth * heightToWidthRatio
-      const fittingMetricsCount = Math.max(Math.floor(availableHeight / targetHeight), 1)
-      const leftOverHeight = availableHeight % targetHeight
-      const adjustedHeight = targetHeight + (leftOverHeight / (fittingMetricsCount))
-      metricHeight = adjustedHeight
+
+      const fittingMetricsCount = Math.max(Math.floor((availableHeight + metricsContainerGap) / (targetHeight + metricsContainerGap)), 1)
+      metricHeight = (availableHeight - getTotalGap(fittingMetricsCount).y) / fittingMetricsCount
     }
 
     return {

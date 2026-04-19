@@ -55,10 +55,8 @@ function MetricGraph ({
   const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
   const adjustedMetricHeight = metricHeight - (2 * surroundingPadding)
 
-  const xMax = metricWidth - (2 * surroundingPadding)
-
   const chartLeftOffset = 2 * surroundingPadding
-  const svgWidth = xMax - (surroundingPadding * 2)
+  const svgWidth = metricWidth - (surroundingPadding * 2)
   const innerXMax = svgWidth - chartLeftOffset
   const yMax = 0.8 * adjustedMetricHeight - topChartBottomMargin
   const yBrushMax = adjustedMetricHeight - yMax - topChartBottomMargin
@@ -133,11 +131,10 @@ function MetricGraph ({
     }, []
   )
 
-  const containerWidth = xMax
   const containerHeight = yMax
 
   const patternLineWidth = 2
-  const numTicksX = Math.floor(containerWidth / remToPx(4))
+  const numTicksX = Math.floor(metricWidth / remToPx(4))
 
   const {
     backgroundSizeUnit,
@@ -179,13 +176,13 @@ function MetricGraph ({
         display: 'flex',
         height: adjustedMetricHeight + (2 * surroundingPadding),
         justifySelf: 'center',
-        width: containerWidth
+        width: metricWidth
       }}>
       <svg
         display="block"
-        width={xMax} height={adjustedMetricHeight}>
+        width={metricWidth} height={adjustedMetricHeight}>
         <rect
-          x={0} y={0} width={xMax} height={adjustedMetricHeight - (surroundingPadding * 2)} fill={`url(#${GRADIENT_ID})`} rx={14} />
+          x={0} y={0} width={metricWidth} height={adjustedMetricHeight - (surroundingPadding * 2)} fill={`url(#${GRADIENT_ID})`} rx={14} />
         <AreaChart
           metricData={displayData}
           xScale={dateScale}
