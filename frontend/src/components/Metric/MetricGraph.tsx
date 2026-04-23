@@ -1,4 +1,3 @@
-
 import type BaseBrush from '@visx/brush/lib/BaseBrush'
 import type { Bounds } from '@visx/brush/lib/types'
 import {
@@ -134,35 +133,36 @@ function MetricGraph ({
   const containerHeight = yMax
 
   const patternLineWidth = 2
-  const numTicksX = Math.floor(metricWidth / remToPx(4))
 
   const {
-    backgroundSizeUnit,
-    tickSpacing,
+    backgroundSizeX,
+    backgroundSizeY,
     xOffset,
     yOffset
   } = useMemo(() => {
-    const ticks = dateScale.ticks(numTicksX)
-    if (ticks.length < 2) return null
+    const xTicks = dateScale.ticks()
+    const yTicks = metricScale.ticks()
 
-    const firstTickPos = dateScale(ticks[0]) || 0
-    const secondTickPos = dateScale(ticks[1]) || 0
-    const tickSpacing = Math.abs(secondTickPos - firstTickPos)
+    const firstXTickPos = dateScale(xTicks[0]) || 0
+    const secondXTickPos = dateScale(xTicks[1]) || 0
+    const backgroundSizeX = Math.abs(secondXTickPos - firstXTickPos)
+    const xOffset = firstXTickPos + chartLeftOffset - (patternLineWidth / 2)
 
+    const firstYTickPos = metricScale(yTicks[0]) || 0
+    const secondYTickPos = metricScale(yTicks[1]) || 0
+    const backgroundSizeY = Math.abs(secondYTickPos - firstYTickPos)
+    const yOffset = firstYTickPos + chartLeftOffset - (patternLineWidth / 2)
 
-    const xOffset = firstTickPos + surroundingPadding
-    const backgroundSizeUnit = tickSpacing / 4
-    const yOffset = ((yMax + surroundingPadding) % backgroundSizeUnit) - (patternLineWidth / 2)
     return {
-      backgroundSizeUnit,
-      tickSpacing,
+      backgroundSizeX,
+      backgroundSizeY,
       xOffset,
       yOffset
     }
 
-  }, [ dateScale, numTicksX ])
+  }, [ dateScale, metricScale, containerHeight ])
 
-  const numTicksY = Math.floor(containerHeight / tickSpacing)
+  const widthToHeightRatio = Math.round(metricWidth / containerHeight)
 
 
   return (
@@ -172,10 +172,16 @@ function MetricGraph ({
         backgroundColor: 'transparent',
         backgroundImage: `linear-gradient(${backgroundColor} ${patternLineWidth}px, transparent ${patternLineWidth}px), linear-gradient(to right, ${backgroundColor} ${patternLineWidth}px, transparent ${patternLineWidth}px)`,
         backgroundPosition: `${xOffset}px ${yOffset}px`,
-        backgroundSize: `${backgroundSizeUnit}px ${backgroundSizeUnit}px`,
+        backgroundSize: `${(backgroundSizeX / widthToHeightRatio) * 0.5}px ${backgroundSizeY * 0.5}px`,
+        borderRadius: 14,
         display: 'flex',
         height: adjustedMetricHeight + (2 * surroundingPadding),
         justifySelf: 'center',
+        maskComposite: 'intersect',
+        maskImage: 'linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 2%, black 98%, transparent 100%)',
+        overflow: 'hidden',
+        WebkitMaskComposite: 'destination-in',
+        WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 2%, black 98%, transparent 100%)',
         width: metricWidth
       }}>
       <svg
@@ -189,8 +195,6 @@ function MetricGraph ({
           yScale={metricScale}
           strokeColor={accentColor}
           left={2 * surroundingPadding} top={surroundingPadding}
-          numTicksX={numTicksX}
-          numTicksY={numTicksY}
         />
         <AreaChart
           hideBottomAxis
