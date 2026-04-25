@@ -6,8 +6,9 @@ export type MetricNames =
   "mem_usage_percent" |
   "cpu_temp_celsius" |
   "disk_used_kb" |
-  "disk_used_percent"
-
+  "disk_used_percent" |
+  "disk_total_kb" |
+  "mem_total_kb"
 
 export type Metric = {
   ID: number

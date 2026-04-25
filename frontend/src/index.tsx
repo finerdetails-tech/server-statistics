@@ -66,4 +66,5 @@ export function App () {
 
 
 render(
-  <App />, document.getElementById('app'))
+  <App />, document.body
+)

@@ -1,4 +1,4 @@
-export const fragmentShader = `
+export const asciiFragmentShader = `
   uniform sampler2D sceneTexture;
   uniform sampler2D glyphAtlas;
   uniform vec2 resolution;

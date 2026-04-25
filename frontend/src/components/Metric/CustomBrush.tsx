@@ -39,9 +39,9 @@ function CustomBrush ({
   width: number,
   height: number,
   margin: Margin,
-  innerRef: MutableRef<BaseBrush>
-  initialBrushPosition: BrushPosition
-  onChange: (domain: Bounds) => void
+  innerRef: MutableRef<BaseBrush | null>,
+  initialBrushPosition?: BrushPosition,
+  onChange: (domain: Bounds | null) => void
 }) {
 
   return (
@@ -59,9 +59,10 @@ function CustomBrush ({
       onChange={onChange}
       selectedBoxStyle={selectedBrushStyle}
       useWindowMoveEvents
-      renderBrushHandle={(props) => (<BrushHandle
-        height={height}
-        {...props} />)}
+      renderBrushHandle={(props) => (
+        <BrushHandle
+          {...props} />
+      )}
     />
   )
 }

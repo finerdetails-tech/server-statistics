@@ -2,7 +2,9 @@
 import {
   useCallback, useEffect
 } from 'preact/hooks'
-import type { Metric } from 'types'
+import type {
+  Metric, MetricNames
+} from 'types'
 import useMetricsConfig from '../../hooks/useMetricsConfig'
 import { removeUntilConditionIsNoLongerMet } from '../../utils'
 import MetricGraph from './MetricGraph'
@@ -26,7 +28,7 @@ function MetricsContainer ({
   const handleMetricUpdate = useCallback((event: MessageEvent) => {
     const newMetrics = JSON.parse(event.data) as { [key: string]: Metric[] }
     const cutoffTimestamp = Math.floor(Date.now() / 1000) - (METRICS_RETAINING_TIME_DAYS * 24 * 60 * 60)
-    const metricNames = Object.keys(newMetrics)
+    const metricNames = Object.keys(newMetrics) as MetricNames[]
 
     for (const metricName of metricNames) {
       METRICS_CONFIG[metricName].setValue((oldMetrics: Metric[]) => {

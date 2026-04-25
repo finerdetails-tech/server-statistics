@@ -6,7 +6,7 @@ import {
   getGlyphCanvas, getGlyphCount
 } from './getGlyphCanvas'
 import {
-  fragmentShader, vertexShader
+  asciiFragmentShader, vertexShader
 } from './shaders'
 
 let camera: THREE.OrthographicCamera
@@ -34,6 +34,9 @@ const INITIAL_POSITION_Z = 150
 const INITIAL_POSITION_Y = 0
 
 const getModelAreaScrollPercent = () => {
+  if (!scrollElement || !placeholderElement) {
+    return 0
+  }
   if (isLandscape) {
     return scrollElement.scrollLeft / placeholderElement.clientWidth
   }
@@ -51,7 +54,7 @@ export function setPlaceholderElement (element: HTMLElement) {
 }
 
 function getCellSize () {
-  const scaledCellSize = Math.round(defaultCellSize * scale)
+  const scaledCellSize = Math.round(defaultCellSize * (scale ?? 1))
   const cellSize = Math.min(maxCellSize, scaledCellSize)
   return cellSize
 }
@@ -177,7 +180,7 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
       model = new THREE.Group()
 
       gltf.scene.children.forEach((child) => {
-        if (child instanceof THREE.Mesh) {
+        if (model && child instanceof THREE.Mesh) {
           const mesh = new THREE.Mesh(child.geometry, modelMaterial)
           model.add(mesh)
         }
@@ -196,7 +199,7 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
 
   const cellSize = getCellSize()
   asciiMaterial = new THREE.ShaderMaterial({
-    fragmentShader: fragmentShader,
+    fragmentShader: asciiFragmentShader,
     side: THREE.DoubleSide,
     uniforms: {
       cellSize: { value: new THREE.Vector2(cellSize, cellSize) },
@@ -251,7 +254,7 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
     const glyphRandomness = (1 - delayedGlyphDarkness) / (1 - maxGlyphDarkness)
 
 
-    if (model) {
+    if (model && asciiMaterial && scale && modelBox) {
       model.rotation.z = -restrictedRotation
       model.rotation.x = -restrictedRotation
       asciiMaterial.uniforms.randomness.value = 0
@@ -277,10 +280,12 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
     camera.zoom = zoom
     camera.updateProjectionMatrix()
 
-    asciiMaterial.uniforms.cellSize.value.set(zoomedCellSize, zoomedCellSize)
+    asciiMaterial?.uniforms.cellSize.value.set(zoomedCellSize, zoomedCellSize)
 
-    asciiMaterial.uniforms.randomness.value = glyphRandomness
-    asciiMaterial.uniforms.glyphDarkness.value = glyphDarkness
+    if (asciiMaterial) {
+      asciiMaterial.uniforms.randomness.value = glyphRandomness
+      asciiMaterial.uniforms.glyphDarkness.value = glyphDarkness
+    }
 
     renderer.setRenderTarget(renderTarget)
     renderer.render(scene, camera)
