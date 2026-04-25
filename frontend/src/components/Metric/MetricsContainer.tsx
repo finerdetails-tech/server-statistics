@@ -4,7 +4,7 @@ import {
 } from 'preact/hooks'
 import type { Metric } from 'types'
 import useMetricsConfig from '../../hooks/useMetricsConfig'
-import {removeUntilConditionIsNoLongerMet} from '../../utils'
+import { removeUntilConditionIsNoLongerMet } from '../../utils'
 import MetricGraph from './MetricGraph'
 
 const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
@@ -89,6 +89,7 @@ function MetricsContainer ({
       {metricConfigList.map(([ name, config ]) => (
         <MetricGraph
           key={name}
+          label={config.label}
           metricHeight={metricHeight}
           metricWidth={metricWidth}
           metrics={config.value}

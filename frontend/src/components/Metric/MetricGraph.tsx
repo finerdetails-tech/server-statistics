@@ -18,6 +18,7 @@ import {
 } from '../../utils'
 import AreaChart from './AreaChart'
 import CustomBrush from './CustomBrush'
+import MetricHeader from './MetricHeader'
 
 const brushMargin = {
   bottom: 15,
@@ -28,12 +29,11 @@ const brushMargin = {
 
 const GRADIENT_ID = 'brush_gradient'
 export const accentColor = '#bbff00ff'
-const backgroundColor = '#1a1a1aff'
 
-const topChartBottomMargin = remToPx(4)
 const surroundingPadding = remToPx(2)
 
 function MetricGraph ({
+  label,
   metricHeight,
   metrics,
   metricWidth
@@ -41,6 +41,7 @@ function MetricGraph ({
   metricHeight: number
   metricWidth: number
   metrics: Metric[],
+  label: string
 }) {
 
 
@@ -52,13 +53,17 @@ function MetricGraph ({
   })), [ metrics ])
 
   const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
-  const adjustedMetricHeight = metricHeight - (2 * surroundingPadding)
+  const metricHeightMinusTopPadding = metricHeight - surroundingPadding
 
   const chartLeftOffset = 2 * surroundingPadding
-  const svgWidth = metricWidth - (surroundingPadding * 2)
-  const innerXMax = svgWidth - chartLeftOffset
-  const yMax = 0.8 * adjustedMetricHeight - topChartBottomMargin
-  const yBrushMax = adjustedMetricHeight - yMax - topChartBottomMargin
+  const metricWidthMinusPadding = metricWidth - (surroundingPadding * 2)
+  const graphWidth = metricWidthMinusPadding - chartLeftOffset
+  const metricHeaderHeight = metricHeightMinusTopPadding * (1 / 4)
+  const metricDataHeight = metricHeightMinusTopPadding * (3 / 4)
+  const brushHeight = (metricDataHeight * 1 / 8)
+  const brushGraphGap = (surroundingPadding * 2)
+  const graphHeight = (metricDataHeight * 7 / 8) - brushGraphGap - 2 * surroundingPadding
+
 
   const brushRef = useRef<BaseBrush | null>(null)
   const [ brushFilter, setBrushFilter ] = useState<Bounds | null>(null)
@@ -86,32 +91,32 @@ function MetricGraph ({
   const dateScale = useMemo(
     () => scaleTime<number>({
       domain: extent(displayData, getDate) as [Date, Date],
-      range: [ 0, innerXMax ]
+      range: [ 0, graphWidth ]
     }),
-    [ innerXMax, displayData ]
+    [ graphWidth, displayData ]
   )
   const metricScale = useMemo(
     () => scaleLinear<number>({
       domain: [ min(displayData, getMetricValue) || 0, max(displayData, getMetricValue) || 0 ],
       nice: true,
-      range: [ yMax, 0 ]
+      range: [ graphHeight, 0 ]
     }),
-    [ yMax, displayData ]
+    [ graphHeight, displayData ]
   )
   const brushDateScale = useMemo(
     () => scaleTime<number>({
       domain: extent(metricData, getDate) as [Date, Date],
-      range: [ 0, innerXMax ]
+      range: [ 0, graphWidth ]
     }),
-    [ innerXMax, metricData ]
+    [ graphWidth, metricData ]
   )
   const brushMetricScale = useMemo(
     () => scaleLinear({
       domain: [ 0, max(metricData, getMetricValue) || 0 ],
       nice: true,
-      range: [ yBrushMax, 0 ]
+      range: [ brushHeight, 0 ]
     }),
-    [ yBrushMax, metricData ]
+    [ brushHeight, metricData ]
   )
 
   const hasInitializedBrush = useRef(false)
@@ -130,96 +135,73 @@ function MetricGraph ({
     }, []
   )
 
-  const containerHeight = yMax
-
-  const patternLineWidth = 2
-
-  const {
-    backgroundSizeX,
-    backgroundSizeY,
-    xOffset,
-    yOffset
-  } = useMemo(() => {
-    const xTicks = dateScale.ticks()
-    const yTicks = metricScale.ticks()
-
-    const firstXTickPos = dateScale(xTicks[0]) || 0
-    const secondXTickPos = dateScale(xTicks[1]) || 0
-    const backgroundSizeX = Math.abs(secondXTickPos - firstXTickPos)
-    const xOffset = firstXTickPos + chartLeftOffset - (patternLineWidth / 2)
-
-    const firstYTickPos = metricScale(yTicks[0]) || 0
-    const secondYTickPos = metricScale(yTicks[1]) || 0
-    const backgroundSizeY = Math.abs(secondYTickPos - firstYTickPos)
-    const yOffset = firstYTickPos + chartLeftOffset - (patternLineWidth / 2)
-
-    return {
-      backgroundSizeX,
-      backgroundSizeY,
-      xOffset,
-      yOffset
-    }
-
-  }, [ dateScale, metricScale, containerHeight ])
-
-  const widthToHeightRatio = Math.round(metricWidth / containerHeight)
-
-
   return (
     <div
+      class="metric-background"
       style={{
-        alignItems: 'center',
-        backgroundColor: 'transparent',
-        backgroundImage: `linear-gradient(${backgroundColor} ${patternLineWidth}px, transparent ${patternLineWidth}px), linear-gradient(to right, ${backgroundColor} ${patternLineWidth}px, transparent ${patternLineWidth}px)`,
-        backgroundPosition: `${xOffset}px ${yOffset}px`,
-        backgroundSize: `${(backgroundSizeX / widthToHeightRatio) * 0.5}px ${backgroundSizeY * 0.5}px`,
-        borderRadius: 14,
+        alignItems: 'flex-start',
+        backgroundColor: '#303030',
         display: 'flex',
-        height: adjustedMetricHeight + (2 * surroundingPadding),
-        justifySelf: 'center',
-        maskComposite: 'intersect',
-        maskImage: 'linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 2%, black 98%, transparent 100%)',
-        overflow: 'hidden',
-        WebkitMaskComposite: 'destination-in',
-        WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 2%, black 98%, transparent 100%)',
-        width: metricWidth
+        flexDirection: 'column',
+        height: metricHeightMinusTopPadding,
+        mixBlendMode: 'difference',
+        paddingTop: surroundingPadding,
+        width: metricWidth,
+        zIndex: -2
       }}>
-      <svg
-        display="block"
-        width={metricWidth} height={adjustedMetricHeight}>
-        <rect
-          x={0} y={0} width={metricWidth} height={adjustedMetricHeight - (surroundingPadding * 2)} fill={`url(#${GRADIENT_ID})`} rx={14} />
-        <AreaChart
-          metricData={displayData}
-          xScale={dateScale}
-          yScale={metricScale}
-          strokeColor={accentColor}
-          left={2 * surroundingPadding} top={surroundingPadding}
-        />
-        <AreaChart
-          hideBottomAxis
-          hideLeftAxis
-          metricData={brushData}
-          xScale={brushDateScale}
-          yScale={brushMetricScale}
-          margin={brushMargin}
-          top={yMax + topChartBottomMargin}
-          left={2 * surroundingPadding}
-          strokeColor={accentColor}
-          isAxesEnabled={false}
-        >
-          <CustomBrush
+      <MetricHeader
+        metricName={label}
+        style={{
+          display: 'flex',
+          height: metricHeaderHeight,
+          padding: `0px ${surroundingPadding}px`
+        }}
+      />
+      <div
+        style={{
+          display: 'flex',
+          height: metricDataHeight,
+          position: "relative"
+        }}>
+        <svg
+          display="block"
+          width={metricWidth} height={metricDataHeight}>
+          <rect
+            x={0} y={0} width={metricWidth} height={metricDataHeight} fill={`url(#${GRADIENT_ID})`} rx={14} />
+          <AreaChart
+            top={0}
+            hideBottomAxis
+            hideLeftAxis
+            metricData={brushData}
             xScale={brushDateScale}
             yScale={brushMetricScale}
-            width={innerXMax}
-            height={yBrushMax}
             margin={brushMargin}
-            innerRef={brushRef}
-            initialBrushPosition={initialBrushPosition}
-            onChange={setBrushFilter}
+            left={2 * surroundingPadding}
+            strokeColor={accentColor}
+            isAxesEnabled={false}
+          >
+            <CustomBrush
+              xScale={brushDateScale}
+              yScale={brushMetricScale}
+              width={graphWidth}
+              height={brushHeight}
+              margin={brushMargin}
+              innerRef={brushRef}
+              initialBrushPosition={initialBrushPosition}
+              onChange={setBrushFilter}
+            />
+          </AreaChart>
+          <AreaChart
+            top={brushHeight + brushGraphGap}
+            metricData={displayData}
+            xScale={dateScale}
+            yScale={metricScale}
+            strokeColor={accentColor}
+            left={2 * surroundingPadding}
           />
-        </AreaChart>
-      </svg>
+
+        </svg>
+      </div>
     </div>
   )
 }
