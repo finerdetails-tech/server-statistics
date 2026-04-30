@@ -28,7 +28,7 @@ const brushMargin = {
 }
 
 const GRADIENT_ID = 'brush_gradient'
-export const accentColor = '#bbff00ff'
+export const accentColor = 'var(--color-accent)'
 
 const surroundingPadding = remToPx(2)
 
@@ -140,7 +140,6 @@ function MetricGraph ({
       class="metric-background"
       style={{
         alignItems: 'flex-start',
-        backgroundColor: '#303030',
         display: 'flex',
         flexDirection: 'column',
         height: metricHeightMinusTopPadding,

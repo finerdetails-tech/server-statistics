@@ -1,3 +1,4 @@
+import { colors } from "../../const/colors"
 const CHARS = " .,-:;+*!?12360$W#@"
 
 export function getGlyphCount () {
@@ -30,7 +31,7 @@ export async function getGlyphCanvas (): Promise<HTMLCanvasElement> {
   ctx.fillStyle = "transparent"
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  ctx.fillStyle = "white"
+  ctx.fillStyle = colors.maxGlyph
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
   ctx.font = `${glyphSize}px GoogleSansCode`

@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import piModelUrl from '/public/models/pi_model.glb?url'
+import { maxGlyphDarkness } from '../../const/colors'
 import {
   getGlyphCanvas, getGlyphCount
 } from './getGlyphCanvas'
@@ -242,7 +243,6 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
     const restrictedRotation = Math.min(modelAreaScrollPercent * modelAreaScrollPercent * Math.PI * 2, portViewRotation)
 
     const zoomedCellSize = Math.max(getZoomedCellSizeAtPercentage(modelAreaScrollPercent), defaultCellSize)
-    const maxGlyphDarkness = 0.05
     const glyphDarkness = Math.max(1 - ((zoomedCellSize - defaultCellSize) / (maxZoomedCellSize - defaultCellSize)), maxGlyphDarkness)
     const glyphRandomnessStartPercentage = 0.2
     const delayedRandomnessPercent = clamp01((modelAreaScrollPercent - glyphRandomnessStartPercentage) / (1 - glyphRandomnessStartPercentage))
