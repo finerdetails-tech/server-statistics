@@ -7,6 +7,7 @@ import {
 import Model from './components/3D/Model'
 import Header from './components/Header'
 import MetricsContainer from './components/Metric/MetricsContainer'
+import { applyColorsAsCSSVariables } from './const/colors'
 import useDimensions from './hooks/useDimensions'
 import useHorizontalScrolling from './hooks/useHorizontalScrolling'
 import useScrollSaving from './hooks/useScrollSaving'
@@ -26,6 +27,8 @@ export function App () {
 
   useHorizontalScrolling(isLandscape, scrollContainerRef)
   useScrollSaving(scrollContainerRef, isMetricsLoaded)
+  applyColorsAsCSSVariables()
+
 
   return (
     <>
