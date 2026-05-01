@@ -1,4 +1,6 @@
-export const asciiFragmentShader = `
+export const getAsciiFragmentShader = (MAX_BACKGROUNDS: number) => (`
+  const int MAX_BACKGROUNDS = ${MAX_BACKGROUNDS};
+  uniform vec4 backgrounds[MAX_BACKGROUNDS]; // (u0, v0, u1, v1)
   uniform sampler2D sceneTexture;
   uniform sampler2D glyphAtlas;
   uniform vec2 resolution;
@@ -10,6 +12,22 @@ export const asciiFragmentShader = `
 
   float random(vec2 seed) {
     return fract(sin(dot(seed, vec2(12.9898, 78.233))) * 43758.5453123);
+  }
+
+  void switchColors(vec4 backgrounds[MAX_BACKGROUNDS], int MAX_BACKGROUNDS, vec2 resolution, inout vec3 color) {
+    bool inside = false;
+
+    for (int i = 0; i < MAX_BACKGROUNDS; i++) {
+      vec4 r = backgrounds[i];
+      vec2 screenUV = gl_FragCoord.xy / resolution;
+      if (screenUV.x > r.x && screenUV.x < r.z && screenUV.y > r.y && screenUV.y < r.w) {
+        inside = true;
+      }
+    }
+
+    if (inside) {
+      color = vec3(glyphDarkness) - color;
+    }
   }
 
   void main() {
@@ -49,9 +67,12 @@ export const asciiFragmentShader = `
     vec2 glyphUV = vec2((glyphX + localUV.x) / glyphCount, localUV.y);
 
     vec4 glyph = texture(glyphAtlas, glyphUV);
-    gl_FragColor = vec4(glyph.rgb * glyphDarkness, glyph.a);
+
+    vec3 pixelColor = glyph.rgb * glyphDarkness;
+    switchColors(backgrounds, MAX_BACKGROUNDS, resolution, pixelColor);
+    gl_FragColor = vec4(pixelColor, 1.0 - pixelColor);
   }
-`
+`)
 
 export const vertexShader = `
   void main() {

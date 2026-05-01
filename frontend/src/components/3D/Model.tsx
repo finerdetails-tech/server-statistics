@@ -1,6 +1,7 @@
 import {
   useEffect, useRef
 } from 'preact/compat'
+import useMetricsConfig from '../../hooks/useMetricsConfig'
 import {
   cleanup, init, resize, setScrollElements
 } from './three'
@@ -20,13 +21,18 @@ function Model ({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const placeholderRef = useRef<HTMLDivElement>(null)
 
+  const { metricsConfigList } = useMetricsConfig()
+  const metricCount = metricsConfigList.length
+
   useEffect(() => {
     console.warn('Initializing 3D scene')
     const onResize = () => {
       resize(window.innerHeight, window.innerWidth)
     }
     window.addEventListener('resize', onResize)
-    init(canvasRef.current)
+    if (canvasRef.current) {
+      init(canvasRef.current, metricCount)
+    }
     return () => {
       window.removeEventListener('resize', onResize)
       cleanup()
@@ -35,7 +41,7 @@ function Model ({
 
 
   useEffect(() => {
-    if (scrollContainerRef.current) {
+    if (placeholderRef.current && scrollContainerRef.current) {
       setScrollElements(placeholderRef.current, scrollContainerRef.current, isLandscape)
     }
   }, [ scrollContainerRef, isLandscape ])

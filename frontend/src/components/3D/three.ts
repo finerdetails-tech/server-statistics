@@ -7,7 +7,7 @@ import {
   getGlyphCanvas, getGlyphCount
 } from './getGlyphCanvas'
 import {
-  asciiFragmentShader, vertexShader
+  getAsciiFragmentShader, vertexShader
 } from './shaders'
 
 let camera: THREE.OrthographicCamera
@@ -94,6 +94,23 @@ export function resize (viewportHeight: number, viewportWidth: number) {
   }
 }
 
+function getBackgroundVectors (positions: UVRect[], count: number): THREE.Vector4[] {
+  const vectors = positions.map((uv) => new THREE.Vector4(...uv))
+  // Ensuring the array has consistent length to prevent crashing
+  while (vectors.length < count) {
+    vectors.push(new THREE.Vector4(0, 0, 0, 0))
+  }
+  return vectors
+}
+
+function updateBackgroundUniforms (canvasElement: HTMLCanvasElement, metricCount: number) {
+  if (!asciiMaterial) {
+    return
+  }
+  const metricBackgroundPositions = findMetricBackgroundPositions(canvasElement)
+  asciiMaterial.uniforms.backgrounds.value = getBackgroundVectors(metricBackgroundPositions, metricCount)
+}
+
 function pixelsToWorldUnits (pixels: number): number {
   if (!camera || !renderer) {
     return 0
@@ -146,12 +163,31 @@ export function cleanup () {
   asciiMaterial?.dispose()
 }
 
+type UVRect = [number, number, number, number]
 
-export async function init (canvasRef: HTMLCanvasElement | null) {
+function findMetricBackgroundPositions (canvasElement: HTMLCanvasElement): UVRect[] {
+
+  const metricBackgrounds = document.querySelectorAll('.metric-background')
+  const uvCoords: UVRect[] = [] // Converting background pixel positions to UV corner coordinates
+  metricBackgrounds.forEach((element) => {
+    const rect = element.getBoundingClientRect()
+    const canvasRect = canvasElement.getBoundingClientRect()
+    const uv: UVRect = [
+      (rect.left - canvasRect.left) / canvasRect.width,
+      1.0 - (rect.bottom - canvasRect.top) / canvasRect.height, // flip: bottom → v0
+      (rect.right - canvasRect.left) / canvasRect.width,
+      1.0 - (rect.top - canvasRect.top) / canvasRect.height // flip: top → v1
+    ]
+    uvCoords.push(uv)
+  })
+  return uvCoords
+}
+
+
+export async function init (canvasRef: HTMLCanvasElement, metricCount: number) {
   const scene = new THREE.Scene()
   camera = new THREE.OrthographicCamera()
-
-  renderer = new THREE.WebGLRenderer({ canvas: canvasRef! })
+  renderer = new THREE.WebGLRenderer({ canvas: canvasRef })
 
   camera.position.z = INITIAL_POSITION_Z
   camera.position.y = INITIAL_POSITION_Y
@@ -198,11 +234,15 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
 
   resize(window.innerHeight, window.innerWidth)
 
+
+  const metricBackgroundPositions = findMetricBackgroundPositions(canvasRef)
+
   const cellSize = getCellSize()
   asciiMaterial = new THREE.ShaderMaterial({
-    fragmentShader: asciiFragmentShader,
+    fragmentShader: getAsciiFragmentShader(metricCount),
     side: THREE.DoubleSide,
     uniforms: {
+      backgrounds: { value: getBackgroundVectors(metricBackgroundPositions, metricCount) },
       cellSize: { value: new THREE.Vector2(cellSize, cellSize) },
       glyphAtlas: { value: glyphTexture },
       glyphCount: { value: getGlyphCount() },
@@ -224,7 +264,7 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
 
   document.body.appendChild(renderer.domElement)
 
-  function animate () {
+  function animate (metricCount: number) {
     // Percentage of how far the user has scrolled through the model area
     const modelAreaScrollPercent = getModelAreaScrollPercent()
     const portViewRotation = 1.563
@@ -276,6 +316,8 @@ export async function init (canvasRef: HTMLCanvasElement | null) {
       camera.position.y = center.y + INITIAL_POSITION_Y
       camera.position.z = center.z + INITIAL_POSITION_Z
     }
+
+    updateBackgroundUniforms(canvasRef, metricCount)
 
     camera.zoom = zoom
     camera.updateProjectionMatrix()
