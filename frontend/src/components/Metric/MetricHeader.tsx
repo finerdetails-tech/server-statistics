@@ -12,7 +12,11 @@ function MetricHeader ({
         style={{
           fontFamily: 'GoogleSansCode, monospace',
           fontSize: '2rem',
-          margin: 0
+          margin: 0,
+          maxWidth: '100%',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'pre-wrap'
         }}>{metricName}
       </h2>
     </div>

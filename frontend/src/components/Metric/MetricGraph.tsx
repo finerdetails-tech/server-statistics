@@ -53,16 +53,17 @@ function MetricGraph ({
   })), [ metrics ])
 
   const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
-  const metricHeightMinusTopPadding = metricHeight - surroundingPadding
+  const metricHeightMinusBottomPadding = metricHeight - (surroundingPadding)
 
-  const chartLeftOffset = 2 * surroundingPadding
-  const metricWidthMinusPadding = metricWidth - (surroundingPadding * 2)
-  const graphWidth = metricWidthMinusPadding - chartLeftOffset
-  const metricHeaderHeight = metricHeightMinusTopPadding * (1 / 4)
-  const metricDataHeight = metricHeightMinusTopPadding * (3 / 4)
-  const brushHeight = (metricDataHeight * 1 / 8)
+
+  const metricWidthMinusRightPadding = metricWidth - surroundingPadding
+  const metricDataWidth = metricWidthMinusRightPadding * (3 / 4)
+  const graphWidth = metricDataWidth - (surroundingPadding * 3)
+
+  const metricHeaderWidth = metricWidthMinusRightPadding * (1 / 4)
+  const brushHeight = (metricHeightMinusBottomPadding * 1 / 8)
   const brushGraphGap = (surroundingPadding * 2)
-  const graphHeight = (metricDataHeight * 7 / 8) - brushGraphGap - 2 * surroundingPadding
+  const graphHeight = (metricHeightMinusBottomPadding * 7 / 8) - brushGraphGap
 
 
   const brushRef = useRef<BaseBrush | null>(null)
@@ -141,34 +142,47 @@ function MetricGraph ({
       style={{
         alignItems: 'flex-start',
         display: 'flex',
-        flexDirection: 'column',
-        height: metricHeightMinusTopPadding,
+        flexDirection: 'row',
+        height: metricHeightMinusBottomPadding,
         mixBlendMode: 'difference',
-        paddingTop: surroundingPadding,
+        paddingBottom: surroundingPadding,
         width: metricWidth,
         zIndex: -2
       }}>
       <MetricHeader
         metricName={label}
         style={{
+          backgroundColor: 'var(--color-minGlyph)',
           display: 'flex',
-          height: metricHeaderHeight,
-          padding: `0px ${surroundingPadding}px`
+          height: metricHeightMinusBottomPadding,
+          maxWidth: metricHeaderWidth,
+          paddingLeft: surroundingPadding,
+          paddingTop: surroundingPadding,
+          width: metricHeaderWidth
         }}
       />
       <div
         style={{
           display: 'flex',
-          height: metricDataHeight,
-          position: "relative"
+          height: metricHeightMinusBottomPadding,
+          position: "relative",
+          width: metricDataWidth
         }}>
         <svg
           display="block"
-          width={metricWidth} height={metricDataHeight}>
+          width={'100%'} height={metricHeightMinusBottomPadding}>
           <rect
-            x={0} y={0} width={metricWidth} height={metricDataHeight} fill={`url(#${GRADIENT_ID})`} rx={14} />
+            x={0} y={0} width={graphWidth} height={metricHeightMinusBottomPadding} fill={`url(#${GRADIENT_ID})`} rx={14} />
           <AreaChart
-            top={0}
+            top={1.5 * surroundingPadding}
+            metricData={displayData}
+            xScale={dateScale}
+            yScale={metricScale}
+            strokeColor={accentColor}
+            left={2 * surroundingPadding}
+          />
+          <AreaChart
+            top={graphHeight + brushGraphGap}
             hideBottomAxis
             hideLeftAxis
             metricData={brushData}
@@ -190,15 +204,6 @@ function MetricGraph ({
               onChange={setBrushFilter}
             />
           </AreaChart>
-          <AreaChart
-            top={brushHeight + brushGraphGap}
-            metricData={displayData}
-            xScale={dateScale}
-            yScale={metricScale}
-            strokeColor={accentColor}
-            left={2 * surroundingPadding}
-          />
-
         </svg>
       </div>
     </div>
