@@ -2,9 +2,7 @@ import {
   useEffect, useRef
 } from 'preact/compat'
 import useMetricsConfig from '../../hooks/useMetricsConfig'
-import {
-  cleanup, init, resize, setScrollElements
-} from './three'
+import ThreeJSManager from './ThreeJSManager'
 
 function Model ({
   headerHeight,
@@ -25,26 +23,19 @@ function Model ({
   const metricCount = metricsConfigList.length
 
   useEffect(() => {
-    console.warn('Initializing 3D scene')
-    const onResize = () => {
-      resize(window.innerHeight, window.innerWidth)
+    let cleanup: () => void
+    const initializeScene = async () => {
+      console.log('Initializing 3D scene')
+      const ThreeJSManagerInstance = await ThreeJSManager.create(canvasRef.current!, placeholderRef.current!, scrollContainerRef.current!, metricCount)
+      cleanup = ThreeJSManagerInstance.cleanup
+
+      return () => {
+        console.log('Cleaning up 3D scene')
+        cleanup()
+      }
     }
-    window.addEventListener('resize', onResize)
-    if (canvasRef.current) {
-      init(canvasRef.current, metricCount)
-    }
-    return () => {
-      window.removeEventListener('resize', onResize)
-      cleanup()
-    }
+    initializeScene()
   }, [])
-
-
-  useEffect(() => {
-    if (placeholderRef.current && scrollContainerRef.current) {
-      setScrollElements(placeholderRef.current, scrollContainerRef.current, isLandscape)
-    }
-  }, [ scrollContainerRef, isLandscape ])
 
   return (
     <>
