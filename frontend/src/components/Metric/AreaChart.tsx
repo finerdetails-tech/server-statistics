@@ -12,9 +12,8 @@ import {
   getDate, getMetricValue
 } from '../../utils'
 
-const axisColor = '#F5F7F2'
 const axisTopTickLabelProps = {
-  fill: axisColor,
+  fill: `var(--color-maxGlyph)`,
   fontFamily: 'GoogleSansCode, monospace',
   fontSize: 10,
   style: {userSelect: 'none'},
@@ -23,7 +22,7 @@ const axisTopTickLabelProps = {
 const axisLeftTickLabelProps = {
   dx: '-0.25em',
   dy: '0.25em',
-  fill: axisColor,
+  fill: `var(--color-maxGlyph)`,
   fontFamily: 'GoogleSansCode, monospace',
   fontSize: 10,
   style: {userSelect: 'none'},
@@ -111,9 +110,9 @@ function AreaChart ({
           <AxisTop
             scale={xScale}
             numTicks={numTicksX}
-            stroke={axisColor}
+            stroke={`var(--color-maxGlyph)`}
             strokeWidth={2}
-            tickStroke={axisColor}
+            tickStroke={`var(--color-maxGlyph)`}
             tickLabelProps={axisTopTickLabelProps}
             tickFormat={dynamicTimeFormatter}
             tickLineProps={tickLineProps}
@@ -122,9 +121,9 @@ function AreaChart ({
           <AxisLeft
             scale={yScale}
             numTicks={numTicksY}
-            stroke={axisColor}
+            stroke={`var(--color-maxGlyph)`}
             strokeWidth={2}
-            tickStroke={axisColor}
+            tickStroke={`var(--color-maxGlyph)`}
             tickLineProps={tickLineProps}
             tickLabelProps={axisLeftTickLabelProps}
           />

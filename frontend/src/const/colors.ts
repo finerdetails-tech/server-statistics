@@ -1,4 +1,4 @@
-export const maxGlyphDarkness = 0.05
+export const maxGlyphDarkness = 0.1
 
 function darken (hex: string, factor: number): string {
   const r = Math.round(parseInt(hex.slice(1, 3), 16) * factor)
