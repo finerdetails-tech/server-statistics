@@ -4,9 +4,12 @@
   font-weight: normal;
   font-style: normal;
 }
-
+html, body {
+  height: 100%;
+}
 body {
   background-color: var(--color-background);
+  grid-template-rows: auto 1fr;
   margin: 0;
   display: grid;
   max-height: 100vh;

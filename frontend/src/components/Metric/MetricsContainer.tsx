@@ -1,28 +1,32 @@
 
 import {
-  useCallback, useEffect
+  useCallback, useEffect,
+  useRef
 } from 'preact/hooks'
 import type {
   Metric, MetricNames
 } from 'types'
+import useDimensions from '../../hooks/useDimensions'
 import useMetricsConfig from '../../hooks/useMetricsConfig'
-import { removeUntilConditionIsNoLongerMet } from '../../utils'
+import {
+  removeUntilConditionIsNoLongerMet, remToPx
+} from '../../utils'
 import MetricGraph from './MetricGraph'
 
 const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
 
 function MetricsContainer ({
-  gap, isLandscape, metricHeight, metricsContainerRef, metricWidth, rowCount, setIsMetricsLoaded
+  isLandscape, setIsMetricsLoaded
 }: {
-  metricHeight: number
-  metricWidth: number
   isLandscape: boolean
-  metricsContainerRef: preact.RefObject<HTMLDivElement>
-  rowCount: number
-  gap: number,
   setIsMetricsLoaded: (loaded: boolean) => void
 }) {
   const { METRICS_CONFIG } = useMetricsConfig()
+  const metricsContainerGap = remToPx(2)
+  const metricsContainerRef = useRef<HTMLDivElement>(null)
+  const {
+    metricHeight, metricsContainerRowCount, metricWidth
+  } = useDimensions(metricsContainerGap, metricsContainerRef)
 
 
   const handleMetricUpdate = useCallback((event: MessageEvent) => {
@@ -64,11 +68,11 @@ function MetricsContainer ({
   }, [])
 
   const metricConfigList = Object.entries(METRICS_CONFIG)
-  const landScapeColumns = Math.ceil(metricConfigList.length / rowCount)
+  const landScapeColumns = Math.ceil(metricConfigList.length / metricsContainerRowCount)
   const gridLayout = isLandscape
     ? {
       gridTemplateColumns: `repeat(${landScapeColumns}, 1fr)`,
-      gridTemplateRows: `repeat(${rowCount}, 1fr)`
+      gridTemplateRows: `repeat(${metricsContainerRowCount}, 1fr)`
     }
     : {
       gridTemplateColumns: '1fr',
@@ -80,10 +84,8 @@ function MetricsContainer ({
       class="metrics-container"
       style={{
         display: 'grid',
-        gap: gap,
-        height: 'fit-content',
+        gap: metricsContainerGap,
         padding: '2rem',
-        width: 'fit-content',
         zIndex: 2,
         ...gridLayout
       }}
