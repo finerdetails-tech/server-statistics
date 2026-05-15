@@ -10,12 +10,7 @@ let cachedCanvas: HTMLCanvasElement | null = null
 export async function getGlyphCanvas (): Promise<HTMLCanvasElement> {
   if (cachedCanvas) return cachedCanvas
 
-  const font = new FontFace(
-    "GoogleSansCode",
-    'url("/fonts/GoogleSansCode-VariableFont_wght.ttf")'
-  )
-  await font.load()
-  document.fonts.add(font)
+  await document.fonts.ready
 
   const glyphCount = getGlyphCount()
 
