@@ -111,7 +111,6 @@ function useDimensions (metricsContainerGap: number) {
     metricsContainerRef,
     metricsContainerRowCount,
     metricWidth,
-    SCROLLBAR_WIDTH,
     viewportHeight,
     viewportWidth
   }

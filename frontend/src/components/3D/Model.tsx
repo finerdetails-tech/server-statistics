@@ -7,12 +7,10 @@ import ThreeJSManager from './ThreeJSManager'
 function Model ({
   headerHeight,
   isLandscape,
-  SCROLLBAR_WIDTH,
   scrollContainerRef
 }: {
   isLandscape: boolean,
   headerHeight: number,
-  SCROLLBAR_WIDTH: number,
   scrollContainerRef: React.RefObject<HTMLElement>
 }) {
 
@@ -37,6 +35,15 @@ function Model ({
     initializeScene()
   }, [])
 
+  const canvasParent = canvasRef.current?.parentElement
+  const canvasParentOffsetWidth = canvasParent?.offsetWidth || 0
+  const canvasParentClientWidth = canvasParent?.clientWidth || 0
+  const canvasParentOffsetHeight = canvasParent?.offsetHeight || 0
+  const canvasParentClientHeight = canvasParent?.clientHeight || 0
+  const scrollBarOffset = isLandscape
+    ? canvasParentOffsetHeight - canvasParentClientHeight
+    : canvasParentOffsetWidth - canvasParentClientWidth
+
   return (
     <>
       <div
@@ -55,7 +62,7 @@ function Model ({
         ref={canvasRef} style={{
           bottom: 0,
           height: `calc(100% - ${headerHeight + (isLandscape
-            ? SCROLLBAR_WIDTH
+            ? scrollBarOffset
             : 0)}px)`,
           left: 0,
           maxHeight: "100vh",
@@ -64,8 +71,8 @@ function Model ({
           right: 0,
           top: headerHeight,
           width: isLandscape
-            ? '100vw'
-            : '100%',
+            ? '100%'
+            : `calc(100% - ${scrollBarOffset}px)`,
           zIndex: -1
         }}
       />
