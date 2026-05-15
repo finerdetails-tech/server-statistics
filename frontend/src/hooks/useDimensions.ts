@@ -45,9 +45,8 @@ function useDimensions (metricsContainerGap: number, metricContainerRef: RefObje
   }
 
   const {
-    headerHeight, metricHeight, metricWidth
+    metricHeight, metricWidth
   } = useMemo(() => {
-    const headerHeight = document.getElementsByTagName('header')[0]?.offsetHeight || 0
     let metricHeight: number
     let metricWidth: number
     const heightToWidthRatio = 2 / 3
@@ -74,14 +73,12 @@ function useDimensions (metricsContainerGap: number, metricContainerRef: RefObje
     }
 
     return {
-      headerHeight,
       metricHeight,
       metricWidth
     }
   }, [ metricContainerHeight, metricContainerWidth ])
 
   return {
-    headerHeight,
     metricContainerHeight,
     metricContainerWidth,
     metricHeight,
