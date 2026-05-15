@@ -1,6 +1,7 @@
+import type { RefObject } from 'preact/compat'
 import { useEffect } from "react"
 
-function useHorizontalScrolling (isEnabled: boolean, scrollContainerRef: React.RefObject<HTMLElement>) {
+function useHorizontalScrolling (isEnabled: boolean, scrollContainerRef: RefObject<HTMLElement>) {
 
   useEffect(() => {
     const element = scrollContainerRef.current

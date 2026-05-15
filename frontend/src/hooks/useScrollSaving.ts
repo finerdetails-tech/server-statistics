@@ -1,4 +1,5 @@
 import { useLayoutEffect } from 'preact/compat'
+import type { RefObject } from 'preact/compat'
 import { debounce } from "throttle-debounce"
 import { elementScrollToPercent } from '../utils'
 
@@ -15,7 +16,7 @@ const JSONStringToPx = (element: HTMLElement, jsonString: string) => {
   }
 }
 
-function useScrollSaving (scrollContainerRef: React.RefObject<HTMLElement>, isMetricsLoaded: boolean) {
+function useScrollSaving (scrollContainerRef: RefObject<HTMLElement>, isMetricsLoaded: boolean) {
 
   useLayoutEffect(() => {
     const element = scrollContainerRef.current

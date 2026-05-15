@@ -1,6 +1,7 @@
 import {
   useEffect, useRef
 } from 'preact/compat'
+import type { RefObject } from 'preact/compat'
 import useMetricsConfig from '../../hooks/useMetricsConfig'
 import ThreeJSManager from './ThreeJSManager'
 
@@ -11,7 +12,7 @@ function Model ({
 }: {
   isLandscape: boolean,
   headerHeight: number,
-  scrollContainerRef: React.RefObject<HTMLElement>
+  scrollContainerRef: RefObject<HTMLElement>
 }) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
