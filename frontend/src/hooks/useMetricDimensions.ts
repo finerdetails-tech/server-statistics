@@ -4,31 +4,31 @@ import {
 } from 'preact/hooks'
 import useIsLandscape from './useIsLandscape'
 
-function useDimensions (metricsContainerGap: number, metricContainerRef: RefObject<HTMLDivElement>) {
+function useMetricDimensions (metricsContainerGap: number, scrollContainerRef: RefObject<HTMLDivElement>) {
 
   const isLandscape = useIsLandscape()
 
-  const [ metricContainerWidth, setMetricContainerWidth ] = useState(0)
-  const [ metricContainerHeight, setMetricContainerHeight ] = useState(0)
+  const [ scrollContainerWidth, setScrollContainerWidth ] = useState(0)
+  const [ scrollContainerHeight, setScrollContainerHeight ] = useState(0)
 
   useEffect(() => {
-    const metricContainer = metricContainerRef.current
+    const scrollContainer = scrollContainerRef.current
 
-    if (!metricContainer) return
+    if (!scrollContainer) return
     const resizeObserver = new ResizeObserver(([ entry ]) => {
       const {
         blockSize, inlineSize
       } = entry.contentBoxSize[0]
-      setMetricContainerWidth(inlineSize)
-      setMetricContainerHeight(blockSize)
+      setScrollContainerWidth(inlineSize)
+      setScrollContainerHeight(blockSize)
 
     })
-    resizeObserver.observe(metricContainer)
+    resizeObserver.observe(scrollContainer)
     return () => resizeObserver.disconnect()
   }, [])
 
 
-  const metricsContainerRowCount = metricContainerHeight > 594
+  const metricsContainerRowCount = scrollContainerHeight > 594
     ? 2
     : 1
 
@@ -51,10 +51,12 @@ function useDimensions (metricsContainerGap: number, metricContainerRef: RefObje
     let metricWidth: number
     const heightToWidthRatio = 2 / 3
 
+    const totalContainerPadding = (2 * metricsContainerGap)
+
     if (isLandscape) {
       const totalGapY = getTotalGap().y
-      const availableHeight = metricContainerHeight - totalGapY
-      const availableWidth = Math.max(metricContainerWidth, 100)
+      const availableHeight = scrollContainerHeight - totalGapY - totalContainerPadding
+      const availableWidth = Math.max(scrollContainerWidth - totalContainerPadding, 100)
 
       metricHeight = Math.max(((availableHeight) / metricsContainerRowCount), 100)
       const targetWidth = metricHeight / heightToWidthRatio
@@ -63,10 +65,11 @@ function useDimensions (metricsContainerGap: number, metricContainerRef: RefObje
       const totalGapX = getTotalGap(fittingMetricsCount).x
       metricWidth = (availableWidth - totalGapX) / fittingMetricsCount
     } else {
-      metricWidth = Math.max(metricContainerWidth, 100)
+      metricWidth = Math.max(scrollContainerWidth - totalContainerPadding, 100)
 
-      const availableHeight = metricContainerHeight
-      const targetHeight = metricWidth * heightToWidthRatio
+      const availableHeight = scrollContainerHeight - totalContainerPadding
+      const availableWidth = scrollContainerWidth - totalContainerPadding
+      const targetHeight = availableWidth * heightToWidthRatio
 
       const fittingMetricsCount = Math.max(Math.floor((availableHeight + metricsContainerGap) / (targetHeight + metricsContainerGap)), 1)
       metricHeight = (availableHeight - getTotalGap(fittingMetricsCount).y) / fittingMetricsCount
@@ -76,15 +79,13 @@ function useDimensions (metricsContainerGap: number, metricContainerRef: RefObje
       metricHeight,
       metricWidth
     }
-  }, [ metricContainerHeight, metricContainerWidth ])
+  }, [ scrollContainerHeight, scrollContainerWidth, isLandscape, metricsContainerGap, metricsContainerRowCount ])
 
   return {
-    metricContainerHeight,
-    metricContainerWidth,
     metricHeight,
     metricsContainerRowCount,
     metricWidth
   }
 }
 
-export default useDimensions
+export default useMetricDimensions

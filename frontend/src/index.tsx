@@ -18,16 +18,13 @@ export function App () {
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-
   const isLandscape = useIsLandscape()
-
 
   useHorizontalScrolling(isLandscape, scrollContainerRef)
   useScrollSaving(scrollContainerRef, isMetricsLoaded)
   applyColorsAsCSSVariables()
 
-  const headerHeight = document.getElementsByTagName('header')[0]?.offsetHeight || 0
-
+  const headerHeight = document.getElementsByTagName('header')[0]?.offsetHeight || 62
 
   return (
     <>
@@ -53,6 +50,7 @@ export function App () {
         />
         <MetricsContainer
           isLandscape={isLandscape}
+          scrollContainerRef={scrollContainerRef}
           setIsMetricsLoaded={setIsMetricsLoaded}
         />
       </div>

@@ -1,4 +1,5 @@
 
+import type { RefObject } from 'preact/compat'
 import {
   useCallback, useEffect,
   useRef
@@ -6,7 +7,7 @@ import {
 import type {
   Metric, MetricNames
 } from 'types'
-import useDimensions from '../../hooks/useDimensions'
+import useMetricDimensions from '../../hooks/useMetricDimensions'
 import useMetricsConfig from '../../hooks/useMetricsConfig'
 import {
   removeUntilConditionIsNoLongerMet, remToPx
@@ -16,17 +17,18 @@ import MetricGraph from './MetricGraph'
 const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
 
 function MetricsContainer ({
-  isLandscape, setIsMetricsLoaded
+  isLandscape, scrollContainerRef, setIsMetricsLoaded
 }: {
   isLandscape: boolean
   setIsMetricsLoaded: (loaded: boolean) => void
+  scrollContainerRef: RefObject<HTMLDivElement>
 }) {
   const { METRICS_CONFIG } = useMetricsConfig()
   const metricsContainerGap = remToPx(2)
   const metricsContainerRef = useRef<HTMLDivElement>(null)
   const {
     metricHeight, metricsContainerRowCount, metricWidth
-  } = useDimensions(metricsContainerGap, metricsContainerRef)
+  } = useMetricDimensions(metricsContainerGap, scrollContainerRef)
 
 
   const handleMetricUpdate = useCallback((event: MessageEvent) => {
