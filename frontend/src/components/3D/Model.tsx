@@ -8,11 +8,13 @@ import ThreeJSManager from './ThreeJSManager'
 function Model ({
   headerHeight,
   isLandscape,
-  scrollContainerRef
+  scrollContainerRef,
+  setMetricPadding
 }: {
   isLandscape: boolean,
   headerHeight: number,
   scrollContainerRef: RefObject<HTMLElement>
+  setMetricPadding: (padding: number) => void
 }) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -25,7 +27,7 @@ function Model ({
     let cleanup: () => void
     const initializeScene = async () => {
       console.log('Initializing 3D scene')
-      const ThreeJSManagerInstance = await ThreeJSManager.create(canvasRef.current!, placeholderRef.current!, scrollContainerRef.current!, metricCount)
+      const ThreeJSManagerInstance = await ThreeJSManager.create(canvasRef.current!, placeholderRef.current!, scrollContainerRef.current!, metricCount, headerHeight, setMetricPadding)
       cleanup = ThreeJSManagerInstance.cleanup
 
       return () => {

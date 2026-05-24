@@ -1,34 +1,32 @@
 
 import type { RefObject } from 'preact/compat'
 import {
-  useCallback, useEffect,
-  useRef
+  useCallback, useEffect, useRef
 } from 'preact/hooks'
 import type {
   Metric, MetricNames
 } from 'types'
 import useMetricDimensions from '../../hooks/useMetricDimensions'
 import useMetricsConfig from '../../hooks/useMetricsConfig'
-import {
-  removeUntilConditionIsNoLongerMet, remToPx
-} from '../../utils'
+import {removeUntilConditionIsNoLongerMet} from '../../utils'
 import MetricGraph from './MetricGraph'
 
 const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
 
 function MetricsContainer ({
-  isLandscape, scrollContainerRef, setIsMetricsLoaded
+  isLandscape, metricPadding, scrollContainerRef, setIsMetricsLoaded
 }: {
   isLandscape: boolean
   setIsMetricsLoaded: (loaded: boolean) => void
   scrollContainerRef: RefObject<HTMLDivElement>
+  metricPadding: number
 }) {
+
   const { METRICS_CONFIG } = useMetricsConfig()
-  const metricsContainerGap = remToPx(2)
   const metricsContainerRef = useRef<HTMLDivElement>(null)
   const {
     metricHeight, metricsContainerRowCount, metricWidth
-  } = useMetricDimensions(metricsContainerGap, scrollContainerRef)
+  } = useMetricDimensions(metricPadding, scrollContainerRef)
 
 
   const handleMetricUpdate = useCallback((event: MessageEvent) => {
@@ -86,8 +84,8 @@ function MetricsContainer ({
       class="metrics-container"
       style={{
         display: 'grid',
-        gap: metricsContainerGap,
-        padding: '2rem',
+        gap: metricPadding,
+        padding: metricPadding,
         zIndex: 2,
         ...gridLayout
       }}

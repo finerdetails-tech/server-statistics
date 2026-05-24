@@ -17,11 +17,13 @@ class ThreeJSManager {
 
   readonly DEFAULT_CELL_SIZE = 6
 
-  readonly MAX_CELL_SIZE = 32
-
   readonly INITIAL_POSITION_Z = 150
 
   readonly INITIAL_POSITION_Y = 0
+
+  readonly CELLS_VERTICALLY_VISIBLE_AT_MAX_ZOOM = 25
+
+  readonly CELLS_HORIZONTALLY_VISIBLE_AT_MAX_ZOOM = 15
 
   camera = new THREE.OrthographicCamera()
 
@@ -51,9 +53,15 @@ class ThreeJSManager {
 
   metricsCount: number
 
+  maxCellSize = 32
+
+  headerHeight: number
+
   postCamera = new THREE.OrthographicCamera(
     -1, 1, 1, -1, 0, 1
   )
+
+  setMetricPadding: (padding: number) => void
 
   private isLandscape () {
     return window.innerWidth > window.innerHeight
@@ -104,9 +112,18 @@ class ThreeJSManager {
     this.scale = newScale
   }
 
+  /*
+   *
+   * MaxGlyphSizeLandscape = canvasHeight / GLYPHS_VISIBLE_AT_MAX_ZOOM_LANDSCAPE
+   * MaxGlyphSizePortrait = canvasWidth / GLYPHS_VISIBLE_AT_MAX_ZOOM_PORTRAIT
+   *
+   * (Padding takes up one glyph)
+   * Padding = this.isLandScape ? MaxGlyphSizeLandscape : MaxGlyphSizePortrait
+   */
+
   private getCellSize () {
     const scaledCellSize = Math.round(this.DEFAULT_CELL_SIZE * (this.scale))
-    const cellSize = Math.min(this.MAX_CELL_SIZE, scaledCellSize)
+    const cellSize = Math.min(this.maxCellSize, scaledCellSize)
     return cellSize
   }
 
@@ -136,16 +153,25 @@ class ThreeJSManager {
     return uvCoords
   }
 
+  private setMaxCellSize () {
+    const newMaxCellSize = this.isLandscape()
+      ? this.scrollElement.clientHeight / this.CELLS_VERTICALLY_VISIBLE_AT_MAX_ZOOM
+      : this.scrollElement.clientWidth / this.CELLS_HORIZONTALLY_VISIBLE_AT_MAX_ZOOM
+    this.setMetricPadding(newMaxCellSize)
+    this.maxCellSize = newMaxCellSize
+    console.log("Updated max cell size to:", newMaxCellSize)
+  }
+
   private updateBackgroundUniforms (metricCount: number) {
     const metricBackgroundPositions = this.findMetricBackgroundPositions()
     this.asciiMaterial.uniforms.backgrounds.value = this.getBackgroundVectors(metricBackgroundPositions, metricCount)
   }
 
   resize = () => {
-    const viewportHeight = window.innerHeight
-    const viewportWidth = window.innerWidth
+    const height = this.scrollElement.clientHeight
+    const width = this.scrollElement.clientWidth
 
-    const aspectRatio = viewportWidth / viewportHeight
+    const aspectRatio = width / height
     const frustumSize = 100
     this.camera.left = frustumSize * aspectRatio / -2
     this.camera.right = frustumSize * aspectRatio / 2
@@ -155,16 +181,16 @@ class ThreeJSManager {
     this.camera.far = 1000
     this.camera.updateProjectionMatrix()
 
-    this.renderTarget.setSize(viewportWidth, viewportHeight)
+    this.renderTarget.setSize(width, height)
 
-    this.renderer.setSize(viewportWidth, viewportHeight, false)
+    this.renderer.setSize(width, height, false)
 
-    this.fitModelToViewport(viewportHeight, viewportWidth)
-
+    this.fitModelToViewport(height, width)
+    this.setMaxCellSize()
     const cellSize = this.getCellSize()
 
     this.asciiMaterial.uniforms.cellSize.value.set(cellSize, cellSize)
-    this.asciiMaterial.uniforms.resolution.value.set(viewportWidth, viewportHeight)
+    this.asciiMaterial.uniforms.resolution.value.set(width, height)
   }
 
   private animate = () => {
@@ -180,7 +206,7 @@ class ThreeJSManager {
     const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1)
 
     const zoom = getZoomAtPercentage(modelAreaScrollPercent)
-    const maxZoomedCellSize = getZoomedCellSizeAtPercentage(1)
+    const maxZoomedCellSize = Math.min(getZoomedCellSizeAtPercentage(1), this.maxCellSize)
 
     const restrictedRotation = Math.min(modelAreaScrollPercent * modelAreaScrollPercent * Math.PI * 2, portViewRotation)
 
@@ -195,6 +221,7 @@ class ThreeJSManager {
     )
     const glyphRandomness = (1 - delayedGlyphDarkness) / (1 - maxGlyphDarkness)
 
+    const finalCellSize = Math.min(zoomedCellSize, this.maxCellSize)
 
     if (this.model && this.asciiMaterial && this.scale && this.modelBox) {
       this.model.rotation.z = -restrictedRotation
@@ -224,7 +251,7 @@ class ThreeJSManager {
     this.camera.zoom = zoom
     this.camera.updateProjectionMatrix()
 
-    this.asciiMaterial.uniforms.cellSize.value.set(zoomedCellSize, zoomedCellSize)
+    this.asciiMaterial.uniforms.cellSize.value.set(finalCellSize, finalCellSize)
     this.asciiMaterial.uniforms.randomness.value = glyphRandomness
     this.asciiMaterial.uniforms.glyphDarkness.value = glyphDarkness
 
@@ -235,7 +262,7 @@ class ThreeJSManager {
     this.renderer.render(this.postScene, this.postCamera)
   }
 
-  constructor (canvasElement: HTMLCanvasElement, placeholderElement: HTMLElement, scrollElement: HTMLElement, metricCount: number, newGlyphTexture: THREE.CanvasTexture, newScene: THREE.Scene, newModel: THREE.Group) {
+  constructor (canvasElement: HTMLCanvasElement, placeholderElement: HTMLElement, scrollElement: HTMLElement, metricCount: number, newGlyphTexture: THREE.CanvasTexture, newScene: THREE.Scene, newModel: THREE.Group, headerHeight: number, setMetricPadding: (padding: number) => void) {
     newGlyphTexture.minFilter = THREE.LinearFilter
     newGlyphTexture.magFilter = THREE.LinearFilter
     newGlyphTexture.needsUpdate = true
@@ -243,12 +270,15 @@ class ThreeJSManager {
     const newRenderer = new THREE.WebGLRenderer({ canvas: canvasElement })
     this.renderer = newRenderer
 
+    this.headerHeight = headerHeight
     this.canvasElement = canvasElement
     this.placeholderElement = placeholderElement
     this.scrollElement = scrollElement
     this.metricsCount = metricCount
     this.scene = newScene
     this.model = newModel
+    this.setMetricPadding = setMetricPadding
+
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 3)
     directionalLight.position.set(5, 5, 5)
@@ -281,7 +311,7 @@ class ThreeJSManager {
         glyphDarkness: { value: 1 },
         randomness: { value: 0 },
         randomSeed: { value: 0 },
-        resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        resolution: { value: new THREE.Vector2(this.scrollElement.clientWidth, this.scrollElement.clientHeight) },
         sceneTexture: { value: newRenderTarget.texture }
       },
       vertexShader: vertexShader
@@ -301,7 +331,7 @@ class ThreeJSManager {
     newRenderer.setAnimationLoop(this.animate)
   }
 
-  static async create (canvasElement: HTMLCanvasElement, placeholderElement: HTMLElement, scrollElement: HTMLElement, metricCount: number) {
+  static async create (canvasElement: HTMLCanvasElement, placeholderElement: HTMLElement, scrollElement: HTMLElement, metricCount: number, headerHeight: number, setMetricPadding: (padding: number) => void): Promise<ThreeJSManager> {
     const dracoLoader = new DRACOLoader()
     dracoLoader.setDecoderPath(
       'https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/'
@@ -328,7 +358,7 @@ class ThreeJSManager {
 
     const newGlyphTexture = new THREE.CanvasTexture(await getGlyphCanvas())
 
-    return new ThreeJSManager(canvasElement, placeholderElement, scrollElement, metricCount, newGlyphTexture, newScene, newModel)
+    return new ThreeJSManager(canvasElement, placeholderElement, scrollElement, metricCount, newGlyphTexture, newScene, newModel, headerHeight, setMetricPadding)
   }
 
   cleanup () {

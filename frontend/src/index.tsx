@@ -15,6 +15,7 @@ import useScrollSaving from './hooks/useScrollSaving'
 
 export function App () {
   const [ isMetricsLoaded, setIsMetricsLoaded ] = useState(false)
+  const [ metricPadding, setMetricPadding ] = useState(0)
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
@@ -44,11 +45,13 @@ export function App () {
           overflow: 'auto'
         }}>
         <Model
+          setMetricPadding={setMetricPadding}
           scrollContainerRef={scrollContainerRef}
           headerHeight={headerHeight}
           isLandscape={isLandscape}
         />
         <MetricsContainer
+          metricPadding={metricPadding}
           isLandscape={isLandscape}
           scrollContainerRef={scrollContainerRef}
           setIsMetricsLoaded={setIsMetricsLoaded}

@@ -66,7 +66,11 @@ export const getAsciiFragmentShader = (MAX_BACKGROUNDS: number) => (`
     float glyphY = 0.0; // Single row atlas
     vec2 glyphUV = vec2((glyphX + localUV.x) / glyphCount, localUV.y);
 
-    vec4 glyph = texture(glyphAtlas, glyphUV);
+    // SDF: reconstruct crisp edges at any scale
+    float dist = texture(glyphAtlas, glyphUV).r;
+    float edgeWidth = fwidth(dist) * 0.5;
+    float alpha = smoothstep(0.5 - edgeWidth, 0.5 + edgeWidth, dist);
+    vec3 glyph = vec3(alpha);
 
     vec3 pixelColor = glyph.rgb * glyphDarkness;
     switchColors(backgrounds, MAX_BACKGROUNDS, resolution, pixelColor);

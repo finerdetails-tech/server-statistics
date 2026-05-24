@@ -1,3 +1,4 @@
+import TinySDF from '@mapbox/tiny-sdf'
 import { colors } from "../../const/colors"
 const CHARS = " .,-:;+*!?12360$W#@"
 
@@ -31,8 +32,25 @@ export async function getGlyphCanvas (): Promise<HTMLCanvasElement> {
   ctx.textBaseline = "middle"
   ctx.font = `${glyphSize}px GoogleSansCode`
 
+  const sdf = new TinySDF({
+    buffer: 16,
+    fontFamily: 'GoogleSansCode',
+    fontSize: glyphSize
+  })
+
   for (let i = 0; i < glyphCount; i++) {
-    ctx.fillText(CHARS[i], i * glyphSize + glyphSize / 2, glyphSize / 2)
+    const {
+      data, height, width
+    } = sdf.draw(CHARS[i])
+    // data is a Uint8ClampedArray of alpha/distance values
+    const imageData = new ImageData(width, height)
+    for (let j = 0; j < data.length; j++) {
+      imageData.data[j * 4] = data[j] // R
+      imageData.data[j * 4 + 1] = data[j] // G
+      imageData.data[j * 4 + 2] = data[j] // B
+      imageData.data[j * 4 + 3] = 255 // A
+    }
+    ctx.putImageData(imageData, i * glyphSize, 0)
   }
 
   cachedCanvas = canvas
