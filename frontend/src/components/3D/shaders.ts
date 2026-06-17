@@ -31,6 +31,10 @@ export const getAsciiFragmentShader = (MAX_BACKGROUNDS: number) => (`
   }
 
   void main() {
+    // Offset grid so remainder is split evenly on both sides
+    vec2 gridOffset = mod(resolution, cellSize) * 29.8;
+    vec2 offsetCoord = gl_FragCoord.xy - gridOffset;
+
     // Which ASCII cell are we in?
     vec2 cellCoord = floor(gl_FragCoord.xy / cellSize);
 
