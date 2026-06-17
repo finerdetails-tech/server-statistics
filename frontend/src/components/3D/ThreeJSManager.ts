@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import piModelUrl from '/public/models/pi_model.glb?url'
-import { maxGlyphDarkness } from '../../const/colors'
+import { MAX_GLYPH_DARKNESS } from '../../const/colors'
 import {
   getGlyphCanvas, getGlyphCount
 } from './getGlyphCanvas'
@@ -211,15 +211,15 @@ class ThreeJSManager {
     const restrictedRotation = Math.min(modelAreaScrollPercent * modelAreaScrollPercent * Math.PI * 2, portViewRotation)
 
     const zoomedCellSize = Math.max(getZoomedCellSizeAtPercentage(modelAreaScrollPercent), this.DEFAULT_CELL_SIZE)
-    const glyphDarkness = Math.max(1 - ((zoomedCellSize - this.DEFAULT_CELL_SIZE) / (maxZoomedCellSize - this.DEFAULT_CELL_SIZE)), maxGlyphDarkness)
+    const glyphDarkness = Math.max(1 - ((zoomedCellSize - this.DEFAULT_CELL_SIZE) / (maxZoomedCellSize - this.DEFAULT_CELL_SIZE)), MAX_GLYPH_DARKNESS)
     const glyphRandomnessStartPercentage = 0.2
     const delayedRandomnessPercent = clamp01((modelAreaScrollPercent - glyphRandomnessStartPercentage) / (1 - glyphRandomnessStartPercentage))
     const delayedZoomedCellSize = Math.max(getZoomedCellSizeAtPercentage(delayedRandomnessPercent), this.DEFAULT_CELL_SIZE)
     const delayedGlyphDarkness = Math.max(
       1 - ((delayedZoomedCellSize - this.DEFAULT_CELL_SIZE) / (maxZoomedCellSize - this.DEFAULT_CELL_SIZE)),
-      maxGlyphDarkness
+      MAX_GLYPH_DARKNESS
     )
-    const glyphRandomness = (1 - delayedGlyphDarkness) / (1 - maxGlyphDarkness)
+    const glyphRandomness = (1 - delayedGlyphDarkness) / (1 - MAX_GLYPH_DARKNESS)
 
     const finalCellSize = Math.min(zoomedCellSize, this.maxCellSize)
 

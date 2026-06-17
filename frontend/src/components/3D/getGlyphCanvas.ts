@@ -1,5 +1,4 @@
 import TinySDF from '@mapbox/tiny-sdf'
-import { colors } from "../../const/colors"
 const CHARS = " .,-:;+*!?12360$W#@"
 
 export function getGlyphCount () {
@@ -24,10 +23,8 @@ export async function getGlyphCanvas (): Promise<HTMLCanvasElement> {
   const ctx = canvas.getContext("2d")
   if (!ctx) throw new Error("Could not get 2D context for glyph atlas canvas")
 
-  ctx.fillStyle = "transparent"
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  ctx.fillStyle = colors.maxGlyph
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
   ctx.font = `${glyphSize}px GoogleSansCode`
