@@ -66,7 +66,7 @@ function MetricContainer ({
 
   const metricHeight = isHeaderOnRight
     ? metricContainerHeightMinusBottomPadding
-    : metricContainerHeightMinusBottomPadding * (3 / 4)
+    : metricContainerHeight * (3 / 4)
 
   const metricHeaderWidth = isHeaderOnRight
     ? metricContainerWidthMinusRightPadding * (1 / 4)
@@ -74,7 +74,7 @@ function MetricContainer ({
 
   const metricHeaderHeight = isHeaderOnRight
     ? metricContainerHeightMinusBottomPadding
-    : metricContainerHeightMinusBottomPadding * (1 / 4)
+    : metricContainerHeight * (1 / 4)
 
   const brushHeight = (metricHeight * 1 / 8)
   const brushGraphGap = (surroundingPadding * 2)
