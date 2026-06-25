@@ -11,7 +11,7 @@ function MetricHeader ({
       <h2
         style={{
           fontFamily: 'GoogleSansCode, monospace',
-          fontSize: '2rem',
+          fontSize: style?.fontSize || '2rem',
           margin: 0,
           maxWidth: '100%',
           overflow: 'hidden',

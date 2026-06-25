@@ -9,7 +9,7 @@ import type {
 import useMetricDimensions from '../../hooks/useMetricDimensions'
 import useMetricsConfig from '../../hooks/useMetricsConfig'
 import {removeUntilConditionIsNoLongerMet} from '../../utils'
-import MetricGraph from './MetricGraph'
+import MetricContainer from './MetricContainer'
 
 const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
 
@@ -25,7 +25,7 @@ function MetricsContainer ({
   const { METRICS_CONFIG } = useMetricsConfig()
   const metricsContainerRef = useRef<HTMLDivElement>(null)
   const {
-    metricHeight, metricsContainerRowCount, metricWidth
+    metricContainerHeight, metricContainerWidth, metricsContainerRowCount
   } = useMetricDimensions(metricPadding, scrollContainerRef)
 
 
@@ -91,11 +91,12 @@ function MetricsContainer ({
       }}
       ref={metricsContainerRef}>
       {metricConfigList.map(([ name, config ]) => (
-        <MetricGraph
+        <MetricContainer
+          isHeaderOnRight={isLandscape}
           key={name}
           label={config.label}
-          metricHeight={metricHeight}
-          metricWidth={metricWidth}
+          metricContainerHeight={metricContainerHeight}
+          metricContainerWidth={metricContainerWidth}
           metrics={config.value}
 
         />

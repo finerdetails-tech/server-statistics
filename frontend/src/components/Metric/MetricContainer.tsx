@@ -32,16 +32,18 @@ export const accentColor = 'var(--color-accent)'
 
 const surroundingPadding = remToPx(2)
 
-function MetricGraph ({
+function MetricContainer ({
+  isHeaderOnRight,
   label,
-  metricHeight,
-  metrics,
-  metricWidth
+  metricContainerHeight,
+  metricContainerWidth,
+  metrics
 }: {
-  metricHeight: number
-  metricWidth: number
+  metricContainerHeight: number
+  metricContainerWidth: number
   metrics: Metric[],
-  label: string
+  label: string,
+  isHeaderOnRight: boolean
 }) {
 
 
@@ -53,17 +55,30 @@ function MetricGraph ({
   })), [ metrics ])
 
   const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
-  const metricHeightMinusBottomPadding = metricHeight - (surroundingPadding)
+  const metricContainerHeightMinusBottomPadding = metricContainerHeight - (surroundingPadding)
 
 
-  const metricWidthMinusRightPadding = metricWidth - surroundingPadding
-  const metricDataWidth = metricWidthMinusRightPadding * (3 / 4)
-  const graphWidth = metricDataWidth - (surroundingPadding * 3)
+  const metricContainerWidthMinusRightPadding = metricContainerWidth - surroundingPadding
+  const metricGraphContainerWidth = isHeaderOnRight
+    ? metricContainerWidthMinusRightPadding * (3 / 4)
+    : metricContainerWidth
+  const graphWidth = metricGraphContainerWidth - (surroundingPadding * 3)
 
-  const metricHeaderWidth = metricWidthMinusRightPadding * (1 / 4)
-  const brushHeight = (metricHeightMinusBottomPadding * 1 / 8)
+  const metricHeight = isHeaderOnRight
+    ? metricContainerHeightMinusBottomPadding
+    : metricContainerHeightMinusBottomPadding * (3 / 4)
+
+  const metricHeaderWidth = isHeaderOnRight
+    ? metricContainerWidthMinusRightPadding * (1 / 4)
+    : metricContainerWidthMinusRightPadding
+
+  const metricHeaderHeight = isHeaderOnRight
+    ? metricContainerHeightMinusBottomPadding
+    : metricContainerHeightMinusBottomPadding * (1 / 4)
+
+  const brushHeight = (metricHeight * 1 / 8)
   const brushGraphGap = (surroundingPadding * 2)
-  const graphHeight = (metricHeightMinusBottomPadding * 7 / 8) - brushGraphGap
+  const graphHeight = (metricHeight * 7 / 8) - brushGraphGap
 
 
   const brushRef = useRef<BaseBrush | null>(null)
@@ -142,37 +157,45 @@ function MetricGraph ({
       style={{
         alignItems: 'flex-start',
         display: 'flex',
-        flexDirection: 'row',
-        height: metricHeightMinusBottomPadding,
+        flexDirection: isHeaderOnRight
+          ? 'row'
+          : 'column',
+        height: metricContainerHeightMinusBottomPadding,
         mixBlendMode: 'difference',
         paddingBottom: surroundingPadding,
-        width: metricWidth,
+        width: metricContainerWidth,
         zIndex: -2
       }}>
       <MetricHeader
         metricName={label}
         style={{
+          alignItems: isHeaderOnRight
+            ? 'flex-start'
+            : 'center',
           backgroundColor: 'var(--color-minGlyph)',
           display: 'flex',
-          height: metricHeightMinusBottomPadding,
+          fontSize: metricHeaderHeight * 0.25,
+          height: metricHeaderHeight,
           maxWidth: metricHeaderWidth,
           paddingLeft: surroundingPadding,
-          paddingTop: surroundingPadding,
+          paddingTop: isHeaderOnRight
+            ? surroundingPadding
+            : 0,
           width: metricHeaderWidth
         }}
       />
       <div
         style={{
           display: 'flex',
-          height: metricHeightMinusBottomPadding,
+          height: metricContainerHeightMinusBottomPadding,
           position: "relative",
-          width: metricDataWidth
+          width: metricGraphContainerWidth
         }}>
         <svg
           display="block"
-          width={'100%'} height={metricHeightMinusBottomPadding}>
+          width={'100%'} height={metricHeight}>
           <rect
-            x={0} y={0} width={graphWidth} height={metricHeightMinusBottomPadding} fill={`url(#${GRADIENT_ID})`} rx={14} />
+            x={0} y={0} width={graphWidth} height={metricHeight} fill={`url(#${GRADIENT_ID})`} rx={14} />
           <AreaChart
             top={1.5 * surroundingPadding}
             metricData={displayData}
@@ -210,4 +233,4 @@ function MetricGraph ({
   )
 }
 
-export default MetricGraph
+export default MetricContainer

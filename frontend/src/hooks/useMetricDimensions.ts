@@ -45,10 +45,10 @@ function useMetricDimensions (metricsContainerGap: number, scrollContainerRef: R
   }
 
   const {
-    metricHeight, metricWidth
+    metricContainerHeight, metricContainerWidth
   } = useMemo(() => {
-    let metricHeight: number
-    let metricWidth: number
+    let metricContainerHeight: number
+    let metricContainerWidth: number
     const heightToWidthRatio = 2 / 3
 
     const totalContainerPadding = (2 * metricsContainerGap)
@@ -58,33 +58,33 @@ function useMetricDimensions (metricsContainerGap: number, scrollContainerRef: R
       const availableHeight = scrollContainerHeight - totalGapY - totalContainerPadding
       const availableWidth = Math.max(scrollContainerWidth - totalContainerPadding, 100)
 
-      metricHeight = Math.max(((availableHeight) / metricsContainerRowCount), 100)
-      const targetWidth = metricHeight / heightToWidthRatio
+      metricContainerHeight = Math.max(((availableHeight) / metricsContainerRowCount), 100)
+      const targetWidth = metricContainerHeight / heightToWidthRatio
 
       const fittingMetricsCount = Math.max(Math.floor((availableWidth + metricsContainerGap) / (targetWidth + metricsContainerGap)), 1)
       const totalGapX = getTotalGap(fittingMetricsCount).x
-      metricWidth = (availableWidth - totalGapX) / fittingMetricsCount
+      metricContainerWidth = (availableWidth - totalGapX) / fittingMetricsCount
     } else {
-      metricWidth = Math.max(scrollContainerWidth - totalContainerPadding, 100)
+      metricContainerWidth = Math.max(scrollContainerWidth - totalContainerPadding, 100)
 
       const availableHeight = scrollContainerHeight - totalContainerPadding
       const availableWidth = scrollContainerWidth - totalContainerPadding
       const targetHeight = availableWidth * heightToWidthRatio
 
       const fittingMetricsCount = Math.max(Math.floor((availableHeight + metricsContainerGap) / (targetHeight + metricsContainerGap)), 1)
-      metricHeight = (availableHeight - getTotalGap(fittingMetricsCount).y) / fittingMetricsCount
+      metricContainerHeight = (availableHeight - getTotalGap(fittingMetricsCount).y) / fittingMetricsCount
     }
 
     return {
-      metricHeight,
-      metricWidth
+      metricContainerHeight,
+      metricContainerWidth
     }
   }, [ scrollContainerHeight, scrollContainerWidth, isLandscape, metricsContainerGap, metricsContainerRowCount ])
 
   return {
-    metricHeight,
-    metricsContainerRowCount,
-    metricWidth
+    metricContainerHeight,
+    metricContainerWidth,
+    metricsContainerRowCount
   }
 }
 
