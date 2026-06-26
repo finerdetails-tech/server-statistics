@@ -34,7 +34,7 @@ const tickLineProps = {strokeWidth: 2}
 
 const dynamicTimeFormatter = (tick: string, _index: number, ticks: { value: string }[]) => {
   const firstTickUnix = new Date(ticks[0]?.value).getTime()
-  const lastTickUnix = new Date(ticks.at(-1)?.value).getTime()
+  const lastTickUnix = new Date(ticks[ticks.length - 1]?.value).getTime()
   const currentTickDate = new Date(tick)
 
   if (lastTickUnix - firstTickUnix < 1000 * 60 * 60 * 24) {
@@ -67,6 +67,7 @@ function AreaChart ({
   numTicksY,
   strokeColor,
   top,
+  underlay,
   xScale,
   yScale
 }: {
@@ -85,6 +86,7 @@ function AreaChart ({
   top?: number
   left?: number
   children?: ComponentChildren
+  underlay?: ComponentChildren
   numTicksX?: number,
   numTicksY?: number
   isAxesEnabled?: boolean
@@ -96,6 +98,7 @@ function AreaChart ({
   return (
     <Group
       left={left || margin?.left || 0} top={top || margin?.top || 0}>
+      {underlay}
       <LinePath<MetricData>
         data={metricData}
         x={xAccessor}

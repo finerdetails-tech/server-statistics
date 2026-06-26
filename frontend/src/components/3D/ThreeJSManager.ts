@@ -159,7 +159,6 @@ class ThreeJSManager {
       : this.scrollElement.clientWidth / this.CELLS_HORIZONTALLY_VISIBLE_AT_MAX_ZOOM
     this.setMetricPadding(newMaxCellSize)
     this.maxCellSize = newMaxCellSize
-    console.log("Updated max cell size to:", newMaxCellSize)
   }
 
   private updateBackgroundUniforms (metricCount: number) {

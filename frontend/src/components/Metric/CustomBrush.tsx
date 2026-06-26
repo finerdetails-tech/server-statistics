@@ -5,6 +5,8 @@ import { BrushHandleRenderProps } from '@visx/brush/lib/BrushHandle'
 import { Bounds } from '@visx/brush/lib/types'
 import { Group } from '@visx/group'
 import type { MutableRef } from 'preact/hooks'
+import { PatternLines } from '@visx/pattern'
+import { colors } from '../../const/colors'
 
 type Margin = {
   bottom: number;
@@ -18,9 +20,18 @@ type BrushPosition = {
   end: {x: number};
 }
 
+export const PATTERN_ID = 'brush_pattern'
+
+/*
+ * The hatch fill is rendered separately as an underlay behind the overview
+ * line (see MetricContainer). The brush itself only contributes its outline
+ * and handles on top, so its selection box uses a transparent (but still
+ * hit-testable) fill to keep drag-to-move working.
+ */
 const selectedBrushStyle = {
   fill: 'transparent',
-  stroke: '#F5F7F2'
+  stroke: colors.text,
+  strokeWidth: 2
 }
 
 function CustomBrush ({
@@ -45,25 +56,35 @@ function CustomBrush ({
 }) {
 
   return (
-    <Brush
-      xScale={xScale}
-      yScale={yScale}
-      width={width}
-      height={height}
-      margin={margin}
-      handleSize={8}
-      innerRef={innerRef}
-      resizeTriggerAreas={[ 'left', 'right' ]}
-      brushDirection="horizontal"
-      initialBrushPosition={initialBrushPosition}
-      onChange={onChange}
-      selectedBoxStyle={selectedBrushStyle}
-      useWindowMoveEvents
-      renderBrushHandle={(props) => (
-        <BrushHandle
-          {...props} />
-      )}
-    />
+    <>
+      <PatternLines
+        id={PATTERN_ID}
+        height={8}
+        width={8}
+        stroke={colors.brushBackground}
+        strokeWidth={1}
+        orientation={[ 'diagonal' ]}
+      />
+      <Brush
+        xScale={xScale}
+        yScale={yScale}
+        width={width}
+        height={height}
+        margin={margin}
+        handleSize={8}
+        innerRef={innerRef}
+        resizeTriggerAreas={[ 'left', 'right' ]}
+        brushDirection="horizontal"
+        initialBrushPosition={initialBrushPosition}
+        onChange={onChange}
+        selectedBoxStyle={selectedBrushStyle}
+        useWindowMoveEvents
+        renderBrushHandle={(props) => (
+          <BrushHandle
+            {...props} />
+        )}
+      />
+    </>
   )
 }
 

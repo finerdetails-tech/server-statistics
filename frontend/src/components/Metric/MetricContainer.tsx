@@ -17,7 +17,7 @@ import {
   aggregateMetrics, getDate, getMetricValue
 } from '../../utils'
 import AreaChart from './AreaChart'
-import CustomBrush from './CustomBrush'
+import CustomBrush, { PATTERN_ID } from './CustomBrush'
 import MetricHeader from './MetricHeader'
 
 const brushMargin = {
@@ -28,7 +28,17 @@ const brushMargin = {
 }
 
 const GRADIENT_ID = 'brush_gradient'
+
+const WEEK_IN_MS = 1000 * 60 * 60 * 24 * 7
+
 export const accentColor = 'var(--color-accent)'
+
+/*
+ * visx Brush expands the reported domain by 2px (SAFE_PIXEL) on each edge when
+ * converting the selection's pixel extent into domain values. We reverse that
+ * here so the hatch underlay lines up exactly with the brush selection outline.
+ */
+const BRUSH_SAFE_PIXEL = 2
 
 const surroundingPadding = remToPx(2)
 
@@ -46,6 +56,8 @@ function MetricContainer ({
   isHeaderOnRight: boolean
 }) {
 
+  if (metrics.length === 0) return null
+
 
   const metricData: MetricData[] = useMemo(() => metrics.map(({
     TimeStamp, Value
@@ -56,7 +68,6 @@ function MetricContainer ({
 
   const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
   const metricContainerHeightMinusBottomPadding = metricContainerHeight - (surroundingPadding)
-
 
   const metricContainerWidthMinusRightPadding = metricContainerWidth - surroundingPadding
   const metricGraphContainerWidth = isHeaderOnRight
@@ -82,14 +93,24 @@ function MetricContainer ({
 
 
   const brushRef = useRef<BaseBrush | null>(null)
-  const [ brushFilter, setBrushFilter ] = useState<Bounds | null>(null)
 
-  if (metricData.length === 0) return null
+
+  const defaultBrushFilter = useMemo(() => {
+    const latestMetricDateUnix = getDate(metricData[metricData.length - 1]).getTime()
+    const dayBeforeLatestMetricDateUnix = latestMetricDateUnix - WEEK_IN_MS
+    return ({
+      x0: dayBeforeLatestMetricDateUnix,
+      x1: latestMetricDateUnix,
+      y0: 0,
+      y1: max(metricData, getMetricValue) || 0
+    })
+  },
+  [ metricData ])
+
+  const [ brushFilter, setBrushFilter ] = useState<Bounds>(defaultBrushFilter)
+
 
   const displayData = useMemo(() => {
-    // TODO set default brushfilter and remove this?
-    if (!brushFilter) return aggregateMetrics(metricData)
-
     const {
       x0, x1
     } = brushFilter
@@ -135,14 +156,10 @@ function MetricContainer ({
     [ brushHeight, metricData ]
   )
 
-  const hasInitializedBrush = useRef(false)
   const initialBrushPosition = useMemo(
     () => {
-      if (metricData.length === 0 || hasInitializedBrush.current) return undefined
-
-      hasInitializedBrush.current = true
-      const latestMetricDate = getDate(metricData[metricData.length - 1])
-      const dayBeforeLatestMetricDate = new Date(latestMetricDate.getTime() - 1000 * 60 * 60 * 24)
+      const latestMetricDate = new Date(defaultBrushFilter.x0)
+      const dayBeforeLatestMetricDate = new Date(defaultBrushFilter.x1)
 
       return ({
         end: { x: brushDateScale(latestMetricDate) },
@@ -150,6 +167,15 @@ function MetricContainer ({
       })
     }, []
   )
+
+  /*
+   * Pixel extent of the current brush selection, used to paint the hatch
+   * pattern behind the overview line via the AreaChart `underlay` prop.
+   */
+  const brushSelectionExtent = useMemo(() => ({
+    x0: brushDateScale(new Date(brushFilter.x0)) + BRUSH_SAFE_PIXEL,
+    x1: brushDateScale(new Date(brushFilter.x1)) - BRUSH_SAFE_PIXEL
+  }), [ brushDateScale, brushFilter ])
 
   return (
     <div
@@ -215,7 +241,17 @@ function MetricContainer ({
             left={2 * surroundingPadding}
             strokeColor={accentColor}
             isAxesEnabled={false}
+            underlay={brushSelectionExtent && (
+              <rect
+                x={brushSelectionExtent.x0}
+                y={0}
+                width={Math.max(0, brushSelectionExtent.x1 - brushSelectionExtent.x0)}
+                height={brushHeight}
+                fill={`url(#${PATTERN_ID})`}
+              />
+            )}
           >
+
             <CustomBrush
               xScale={brushDateScale}
               yScale={brushMetricScale}
@@ -224,7 +260,10 @@ function MetricContainer ({
               margin={brushMargin}
               innerRef={brushRef}
               initialBrushPosition={initialBrushPosition}
-              onChange={setBrushFilter}
+              onChange={(domain) => {
+                if (!domain) return
+                setBrushFilter(domain)
+              }}
             />
           </AreaChart>
         </svg>
