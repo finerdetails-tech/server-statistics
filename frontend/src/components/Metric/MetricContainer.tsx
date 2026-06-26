@@ -81,7 +81,7 @@ function MetricContainer ({
 
   const metricHeaderWidth = isHeaderOnRight
     ? metricContainerWidthMinusRightPadding * (1 / 4)
-    : metricContainerWidthMinusRightPadding
+    : metricContainerWidth
 
   const metricHeaderHeight = isHeaderOnRight
     ? metricContainerHeightMinusBottomPadding
@@ -177,6 +177,10 @@ function MetricContainer ({
     x1: brushDateScale(new Date(brushFilter.x1)) - BRUSH_SAFE_PIXEL
   }), [ brushDateScale, brushFilter ])
 
+  const headerPadding = isHeaderOnRight
+    ? surroundingPadding
+    : 0
+
   return (
     <div
       class="metric-background"
@@ -200,11 +204,16 @@ function MetricContainer ({
             : 'center',
           backgroundColor: 'var(--color-minGlyph)',
           display: 'flex',
-          fontSize: metricHeaderHeight * 0.25,
+          fontSize: isHeaderOnRight
+            ? metricHeaderWidth * 0.125
+            : metricHeaderHeight * 0.25,
           height: metricHeaderHeight,
+          justifyContent: isHeaderOnRight
+            ? 'flex-start'
+            : 'center',
           maxWidth: metricHeaderWidth,
-          paddingLeft: surroundingPadding,
-          paddingTop: isHeaderOnRight
+          paddingLeft: headerPadding,
+          paddingTop: headerPadding
             ? surroundingPadding
             : 0,
           width: metricHeaderWidth
