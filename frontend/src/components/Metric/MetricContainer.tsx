@@ -262,6 +262,7 @@ function MetricContainer ({
           >
 
             <CustomBrush
+              isHeaderOnRight={isHeaderOnRight}
               xScale={brushDateScale}
               yScale={brushMetricScale}
               width={graphWidth}
