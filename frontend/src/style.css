@@ -6,6 +6,8 @@
 }
 html, body {
   height: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent) var(--color-minGlyph);
 }
 body {
   background-color: var(--color-background);

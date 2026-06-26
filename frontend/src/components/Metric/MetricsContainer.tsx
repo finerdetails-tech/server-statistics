@@ -98,7 +98,6 @@ function MetricsContainer ({
           metricContainerHeight={metricContainerHeight}
           metricContainerWidth={metricContainerWidth}
           metrics={config.value}
-
         />
       ))}
     </div>
