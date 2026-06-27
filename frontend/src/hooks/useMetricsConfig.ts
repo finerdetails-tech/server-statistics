@@ -61,7 +61,7 @@ function useMetricsConfig () {
       value: filteredMemAvailable
     },
     mem_total_mb: {
-      isLiveUpdated: true,
+      isLiveUpdated: false,
       label: "Total Memory",
       setValue: setFilteredMemTotal,
       unit: "MB",
