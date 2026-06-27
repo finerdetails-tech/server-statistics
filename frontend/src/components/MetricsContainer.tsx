@@ -92,6 +92,7 @@ function MetricsContainer ({
       ref={metricsContainerRef}>
       {metricConfigList.map(([ name, config ]) => (
         <Metric
+          isLiveUpdated={config.isLiveUpdated}
           isHeaderOnRight={isLandscape}
           key={name}
           label={config.label}
