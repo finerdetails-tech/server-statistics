@@ -2,7 +2,7 @@ package websocket
 
 import (
 	"api/database"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"sync"
@@ -36,10 +36,10 @@ var wsUpgrader = websocket.Upgrader{
 }
 
 func (manager *Manager) serveWebsocket(w http.ResponseWriter, r *http.Request) {
-	log.Println("Initializing new WebSocket connection")
+	slog.Info("Initializing new WebSocket connection")
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		slog.Error("Failed to upgrade WebSocket connection", "error", err)
 		return
 	}
 	wsClient := manager.addClient(conn)

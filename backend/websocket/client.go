@@ -2,7 +2,7 @@ package websocket
 
 import (
 	"api/database"
-	"log"
+	"log/slog"
 
 	"github.com/gorilla/websocket"
 )
@@ -24,7 +24,11 @@ func newClient(conn *websocket.Conn, manager *Manager) *Client {
 }
 
 func (client *Client) sendAllMetrics() {
-	metrics := client.manager.database.GetAllMetrics()
+	metrics, err := client.manager.database.GetAllMetrics()
+	if err != nil {
+		slog.Warn("Error getting all metrics:", "error", err)
+		return
+	}
 	client.write(metrics)
 }
 
@@ -39,13 +43,13 @@ func (client *Client) destroyClient() {
 	client.manager.removeClient(client)
 	close(client.channel)
 	client.conn.Close()
-	log.Println("WebSocket client removed")
+	slog.Info("WebSocket client removed")
 }
 
 func (client *Client) write(metrics map[string][]database.Metric) {
 	err := client.conn.WriteJSON(metrics)
 	if err != nil {
-		log.Println("Error writing to WebSocket:", err)
+		slog.Warn("Error writing to WebSocket:", "error", err)
 		client.destroyClient()
 		return
 	}

@@ -53,7 +53,11 @@ func (router *Router) postMetrics(w http.ResponseWriter, r *http.Request) {
 			Value:     rawMetric.Value,
 		}
 
-		metric := router.database.InsertMetric(convertedMetric)
+		metric, err := router.database.InsertMetric(convertedMetric)
+		if err != nil {
+			http.Error(w, "Failed to insert metric into database", http.StatusInternalServerError)
+			return
+		}
 		metricsMap[metric.Name] = append(metricsMap[metric.Name], metric)
 	}
 	router.wsManager.BroadcastMetrics(metricsMap)
