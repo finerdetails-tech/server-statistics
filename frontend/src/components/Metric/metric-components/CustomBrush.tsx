@@ -28,11 +28,7 @@ export const PATTERN_ID = 'brush_pattern'
  * and handles on top, so its selection box uses a transparent (but still
  * hit-testable) fill to keep drag-to-move working.
  */
-const selectedBrushStyle = {
-  fill: 'transparent',
-  stroke: colors.text,
-  strokeWidth: 2
-}
+const selectedBrushStyle = { fill: 'transparent' }
 
 function CustomBrush ({
   height,
@@ -64,7 +60,7 @@ function CustomBrush ({
         height={8}
         width={8}
         stroke={colors.brushBackground}
-        strokeWidth={1}
+        strokeWidth={2}
         orientation={[ 'diagonal' ]}
       />
       <Brush

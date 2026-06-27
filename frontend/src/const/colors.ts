@@ -29,7 +29,7 @@ export function extractHSLComponents (hsl: string): {
 export const colors = {
   accent: '#c4e21a',
   background: '#0D0A0C',
-  brushBackground: "#f0f0f0",
+  brushBackground: "#f0f0f040",
   minGlyph: `hsl(350 5% ${maxGlyphDarknessPercentage})`,
   text: "#f9f9f9"
 } as const

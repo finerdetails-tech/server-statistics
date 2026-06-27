@@ -183,6 +183,15 @@ function MetricGraph ({
           yScale={metricScale}
           strokeColor={accentColor}
           left={2 * surroundingPadding}
+          underlay={(
+            <rect
+              x={0}
+              y={0}
+              width={graphWidth}
+              height={graphHeight}
+              fill={`url(#${PATTERN_ID})`}
+            />
+          )}
         />
         <AreaChart
           top={graphHeight + brushGraphGap}
