@@ -6,7 +6,7 @@ import {
 } from 'preact/compat'
 import Model from './components/3D/Model'
 import Header from './components/Header'
-import MetricsContainer from './components/Metric/MetricsContainer'
+import MetricsContainer from './components/MetricsContainer'
 import { applyColorsAsCSSVariables } from './const/colors'
 import useHorizontalScrolling from './hooks/useHorizontalScrolling'
 import useIsLandscape from './hooks/useIsLandscape'

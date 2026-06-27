@@ -10,7 +10,7 @@ import { useCallback } from 'preact/compat'
 import type { MetricData } from 'types'
 import {
   getDate, getMetricValue
-} from '../../utils'
+} from '../../../utils'
 
 const axisTopTickLabelProps = {
   fill: `var(--color-text)`,

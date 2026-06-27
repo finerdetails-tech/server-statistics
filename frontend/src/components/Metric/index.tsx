@@ -10,15 +10,15 @@ import {
   useMemo, useRef, useState
 } from 'preact/hooks'
 import type {
-  Metric, MetricData
+  Metric as MetricType, MetricData
 } from 'types'
 import { remToPx } from '../../utils'
 import {
   aggregateMetrics, getDate, getMetricValue
 } from '../../utils'
-import AreaChart from './AreaChart'
-import CustomBrush, { PATTERN_ID } from './CustomBrush'
-import MetricHeader from './MetricHeader'
+import AreaChart from './metric-components/AreaChart'
+import CustomBrush, { PATTERN_ID } from './metric-components/CustomBrush'
+import MetricHeader from './metric-components/MetricHeader'
 
 const brushMargin = {
   bottom: 15,
@@ -42,7 +42,7 @@ const BRUSH_SAFE_PIXEL = 2
 
 const surroundingPadding = remToPx(2)
 
-function MetricContainer ({
+function Metric ({
   isHeaderOnRight,
   label,
   metricContainerHeight,
@@ -51,7 +51,7 @@ function MetricContainer ({
 }: {
   metricContainerHeight: number
   metricContainerWidth: number
-  metrics: Metric[],
+  metrics: MetricType[],
   label: string,
   isHeaderOnRight: boolean
 }) {
@@ -282,4 +282,4 @@ function MetricContainer ({
   )
 }
 
-export default MetricContainer
+export default Metric

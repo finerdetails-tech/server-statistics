@@ -4,9 +4,9 @@ import type BaseBrush from '@visx/brush/lib/BaseBrush'
 import { BrushHandleRenderProps } from '@visx/brush/lib/BrushHandle'
 import { Bounds } from '@visx/brush/lib/types'
 import { Group } from '@visx/group'
-import type { MutableRef } from 'preact/hooks'
 import { PatternLines } from '@visx/pattern'
-import { colors } from '../../const/colors'
+import type { MutableRef } from 'preact/hooks'
+import { colors } from '../../../const/colors'
 
 type Margin = {
   bottom: number;

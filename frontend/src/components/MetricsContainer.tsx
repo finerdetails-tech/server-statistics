@@ -4,12 +4,12 @@ import {
   useCallback, useEffect, useRef
 } from 'preact/hooks'
 import type {
-  Metric, MetricNames
+  Metric as MetricType, MetricNames
 } from 'types'
-import useMetricDimensions from '../../hooks/useMetricDimensions'
-import useMetricsConfig from '../../hooks/useMetricsConfig'
-import {removeUntilConditionIsNoLongerMet} from '../../utils'
-import MetricContainer from './MetricContainer'
+import useMetricDimensions from '../hooks/useMetricDimensions'
+import useMetricsConfig from '../hooks/useMetricsConfig'
+import { removeUntilConditionIsNoLongerMet } from '../utils'
+import Metric from './Metric'
 
 const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
 
@@ -30,18 +30,18 @@ function MetricsContainer ({
 
 
   const handleMetricUpdate = useCallback((event: MessageEvent) => {
-    const newMetrics = JSON.parse(event.data) as { [key: string]: Metric[] }
+    const newMetrics = JSON.parse(event.data) as { [key: string]: MetricType[] }
     const cutoffTimestamp = Math.floor(Date.now() / 1000) - (METRICS_RETAINING_TIME_DAYS * 24 * 60 * 60)
     const metricNames = Object.keys(newMetrics) as MetricNames[]
 
     for (const metricName of metricNames) {
-      METRICS_CONFIG[metricName].setValue((oldMetrics: Metric[]) => {
+      METRICS_CONFIG[metricName].setValue((oldMetrics: MetricType[]) => {
         const isNotLiveUpdated = !METRICS_CONFIG[metricName].isLiveUpdated
         if (isNotLiveUpdated) {
           return newMetrics[metricName]
         }
         // Removing old metrics beyond retaining time
-        const cleanedOldMetrics = removeUntilConditionIsNoLongerMet(oldMetrics, (metric: Metric) => metric.TimeStamp < cutoffTimestamp)
+        const cleanedOldMetrics = removeUntilConditionIsNoLongerMet(oldMetrics, (metric: MetricType) => metric.TimeStamp < cutoffTimestamp)
         return [ ...cleanedOldMetrics, ...newMetrics[metricName] ]
       })
     }
@@ -91,7 +91,7 @@ function MetricsContainer ({
       }}
       ref={metricsContainerRef}>
       {metricConfigList.map(([ name, config ]) => (
-        <MetricContainer
+        <Metric
           isHeaderOnRight={isLandscape}
           key={name}
           label={config.label}
