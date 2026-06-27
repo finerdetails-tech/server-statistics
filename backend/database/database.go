@@ -1,17 +1,17 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/glebarez/sqlite"
-	"gorm.io/gorm"
+	_ "modernc.org/sqlite"
 )
 
 type Metric struct {
-	ID        uint `gorm:"primarykey"`
+	ID        uint
 	Name      string
 	TimeStamp int64
 	Value     string
@@ -27,39 +27,44 @@ func retainingTimeUnix() int64 {
 }
 
 type Database struct {
-	orm *gorm.DB
+	*sql.DB
 }
 
 func NewDatabase() *Database {
-	var orm, err = gorm.Open(sqlite.Open("./server_statistics.db"), &gorm.Config{})
+	db, err := sql.Open("sqlite", "./server_statistics.db")
 	if err != nil {
 		panic("failed to connect database, " + err.Error())
 	}
 
-	if err := orm.AutoMigrate(&Metric{}); err != nil {
-		panic("failed to migrate database, " + err.Error())
-	}
+	db.Exec("CREATE TABLE IF NOT EXISTS metrics (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, time_stamp INTEGER, value TEXT)")
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_name_timestamp ON metrics(name, time_stamp)")
 
-	orm.Exec("CREATE INDEX IF NOT EXISTS idx_name_timestamp ON metrics(name, time_stamp)")
-
-	return &Database{
-		orm: orm,
-	}
+	return &Database{db}
 }
 
 func (database *Database) findMetricsBy(condition string) []Metric {
 	var metrics []Metric
-	if res := database.orm.Where(condition).Find(&metrics); res.Error != nil {
-		panic("failed to get metrics, " + res.Error.Error())
+	queryString := fmt.Sprintf("SELECT * FROM metrics WHERE %s", condition)
+	rows, error := database.Query(queryString)
+	if error != nil {
+		panic("failed to get metrics, " + error.Error())
 	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var metric Metric
+		if err := rows.Scan(&metric.ID, &metric.Name, &metric.TimeStamp, &metric.Value); err != nil {
+			panic("failed to scan metric, " + err.Error())
+		}
+		metrics = append(metrics, metric)
+	}
+
 	return metrics
 }
 
 func (database *Database) GetAllMetrics() map[string][]Metric {
-	condition := fmt.Sprintf("time_stamp > %d", retainingTimeUnix())
-	var metrics []Metric
-
-	database.orm.Where(condition).Order("name ASC, time_stamp ASC").Find(&metrics)
+	condition := fmt.Sprintf("time_stamp > %d ORDER BY name ASC, time_stamp ASC", retainingTimeUnix())
+	metrics := database.findMetricsBy(condition)
 
 	grouped := make(map[string][]Metric)
 	for _, metric := range metrics {
@@ -70,8 +75,9 @@ func (database *Database) GetAllMetrics() map[string][]Metric {
 }
 
 func (database *Database) InsertMetric(newMetric Metric) Metric {
-	if res := database.orm.Create(&newMetric); res.Error != nil {
-		panic("failed to insert metric, " + res.Error.Error())
+	_, err := database.Exec("INSERT INTO metrics (name, time_stamp, value) VALUES (?, ?, ?)", newMetric.Name, newMetric.TimeStamp, newMetric.Value)
+	if err != nil {
+		panic("failed to insert metric, " + err.Error())
 	}
 
 	return newMetric
@@ -79,10 +85,10 @@ func (database *Database) InsertMetric(newMetric Metric) Metric {
 
 func (database *Database) RemoveExpiredMetrics() {
 	condition := fmt.Sprintf("time_stamp < %d", retainingTimeUnix())
-	expiredMetrics := database.findMetricsBy(condition)
 
-	if res := database.orm.Delete(&expiredMetrics); res.Error != nil {
-		panic("failed to delete old metrics, " + res.Error.Error())
+	_, err := database.Exec(fmt.Sprintf("DELETE FROM metrics WHERE %s", condition))
+	if err != nil {
+		panic("failed to delete old metrics, " + err.Error())
 	}
 }
 
