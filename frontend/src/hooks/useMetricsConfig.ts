@@ -32,18 +32,18 @@ function useMetricsConfig () {
       unit: "%",
       value: filteredCpuUsagePercent
     },
-    disk_total_kb: {
+    disk_total_mb: {
       isLiveUpdated: false,
       label: "Total Disk",
       setValue: setFilteredDiskTotal,
-      unit: "KB",
+      unit: "MB",
       value: filteredDiskTotal
     },
-    disk_used_kb: {
+    disk_used_mb: {
       isLiveUpdated: true,
       label: "Disk Used",
       setValue: setFilteredDiskUsed,
-      unit: "KB",
+      unit: "MB",
       value: filteredDiskUsed
     },
     disk_used_percent: {
@@ -53,18 +53,18 @@ function useMetricsConfig () {
       unit: "%",
       value: filteredDiskUsedPercent
     },
-    mem_available_kb: {
+    mem_available_mb: {
       isLiveUpdated: true,
       label: "Memory Available",
       setValue: setFilteredMemAvailable,
-      unit: "KB",
+      unit: "MB",
       value: filteredMemAvailable
     },
-    mem_total_kb: {
+    mem_total_mb: {
       isLiveUpdated: true,
       label: "Total Memory",
       setValue: setFilteredMemTotal,
-      unit: "KB",
+      unit: "MB",
       value: filteredMemTotal
     },
     mem_usage_percent: {
@@ -74,18 +74,18 @@ function useMetricsConfig () {
       unit: "%",
       value: filteredMemUsage
     },
-    throughput_received_kbps: {
+    throughput_received_mbps: {
       isLiveUpdated: true,
       label: "Throughput Received",
       setValue: setFilteredThroughputReceived,
-      unit: "kbps",
+      unit: "Mbps",
       value: filteredThroughputReceived
     },
-    throughput_transmitted_kbps: {
+    throughput_transmitted_mbps: {
       isLiveUpdated: true,
       label: "Throughput Transmitted",
       setValue: setFilteredThroughputTransmitted,
-      unit: "kbps",
+      unit: "Mbps",
       value: filteredThroughputTransmitted
     }
   }), [ filteredCpuTemp, filteredCpuUsagePercent, filteredDiskUsed, filteredDiskUsedPercent, filteredDiskTotal, filteredMemAvailable, filteredMemTotal, filteredMemUsage, filteredThroughputReceived, filteredThroughputTransmitted ])

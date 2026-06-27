@@ -61,21 +61,24 @@ pub async fn get_mem_info(is_first_iteration: bool) -> Result<Vec<Metric>, Box<d
     let mem_total_kb = mem_total_line
         .nth(1)
         .ok_or("Could not read value in mem_total_line")?
-        .parse::<f64>()?;
+        .parse::<u32>()?;
+    let mem_total_mb = mem_total_kb / 1024;
 
     let mem_available_kb = mem_available_line
         .nth(1)
         .ok_or("Could not read value in mem_available_line")?
-        .parse::<f64>()?;
+        .parse::<u32>()?;
 
-    let mem_usage_percent_raw = ((1.0 - (mem_available_kb / mem_total_kb)) * 100.0) as f64;
+    let mem_available_mb = mem_available_kb / 1024;
+
+    let mem_usage_percent_raw = ((1.0 - (mem_available_kb as f64 / mem_total_kb as f64)) * 100.0) as f64;
 
     let mem_usage_percent_rounded = (mem_usage_percent_raw * 10.0).round() / 10.0;
 
     let mut metrics = vec![
         Metric {
-            name: "mem_available_kb".to_string(),
-            value: mem_available_kb.to_string(),
+            name: "mem_available_mb".to_string(),
+            value: mem_available_mb.to_string(),
             timestamp: current_unix_time(),
         },
         Metric {
@@ -86,8 +89,8 @@ pub async fn get_mem_info(is_first_iteration: bool) -> Result<Vec<Metric>, Box<d
     ];
     if is_first_iteration {
         metrics.push(Metric {
-            name: "mem_total_kb".to_string(),
-            value: mem_total_kb.to_string(),
+            name: "mem_total_mb".to_string(),
+            value: mem_total_mb.to_string(),
             timestamp: current_unix_time(),
         });
     }
@@ -118,17 +121,19 @@ pub async fn get_disk_info(is_first_iteration: bool) -> Result<Vec<Metric>, Box<
         return Err("Failed to get filesystem statistics".into());
     }
 
-    let disk_total_kb = stats.f_blocks * stats.f_frsize;
-    let disk_free_kb = stats.f_bfree * stats.f_frsize;
+    let disk_total_kb = stats.f_blocks as u64 * stats.f_frsize as u64;
+    let disk_free_kb = stats.f_bfree as u64 * stats.f_frsize as u64;
     let disk_used_kb = disk_total_kb - disk_free_kb;
+    let disk_total_mb = disk_total_kb / 1024;
+    let disk_used_mb = disk_used_kb / 1024;
     let disk_used_percent_raw = (disk_used_kb / disk_total_kb) as f64 * 100.0;
 
     let disk_used_percent = (disk_used_percent_raw * 10.0).round() / 10.0;
 
     let mut metrics = vec![
         Metric {
-            name: "disk_used_kb".to_string(),
-            value: disk_used_kb.to_string(),
+            name: "disk_used_mb".to_string(),
+            value: disk_used_mb.to_string(),
             timestamp: current_unix_time(),
         },
         Metric {
@@ -140,8 +145,8 @@ pub async fn get_disk_info(is_first_iteration: bool) -> Result<Vec<Metric>, Box<
 
     if is_first_iteration {
         metrics.push(Metric {
-            name: "disk_total_kb".to_string(),
-            value: disk_total_kb.to_string(),
+            name: "disk_total_mb".to_string(),
+            value: disk_total_mb.to_string(),
             timestamp: current_unix_time(),
         });
     }
@@ -164,18 +169,18 @@ pub async fn get_network_info() -> Result<Vec<Metric>, Box<dyn Error>> {
     sleep(Duration::from_secs(1));
     let [received_bytes_2, transmitted_bytes_2] = measure_network_stats()?;
 
-    let received_kbps = (received_bytes_2 - received_bytes) / 1024;
-    let transmitted_kbps = (transmitted_bytes_2 - transmitted_bytes) / 1024;
+    let received_mbps = (received_bytes_2 - received_bytes) / 1024 / 1024;
+    let transmitted_mbps = (transmitted_bytes_2 - transmitted_bytes) / 1024 / 1024;
 
     let received_metric = Metric {
-        name: "throughput_received_kbps".to_string(),
-        value: received_kbps.to_string(),
+        name: "throughput_received_mbps".to_string(),
+        value: received_mbps.to_string(),
         timestamp: current_unix_time(),
     };
 
     let transmitted_metric = Metric {
-        name: "throughput_transmitted_kbps".to_string(),
-        value: transmitted_kbps.to_string(),
+        name: "throughput_transmitted_mbps".to_string(),
+        value: transmitted_mbps.to_string(),
         timestamp: current_unix_time(),
     };
 

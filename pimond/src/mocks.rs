@@ -20,8 +20,8 @@ fn mock_cpu_metrics() -> Result<Vec<Metric>, Box<dyn Error>> {
 fn mock_mem_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Error>> {
     let mut metrics = vec![
         Metric {
-            name: "mem_available_kb".to_string(),
-            value: get_random_integer(4096000, 8192000).to_string(),
+            name: "mem_available_mb".to_string(),
+            value: get_random_integer(4096, 8192).to_string(),
             timestamp: current_unix_time(),
         },
         Metric {
@@ -33,8 +33,8 @@ fn mock_mem_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Err
 
     if is_first_iteration {
         metrics.push(Metric {
-            name: "mem_total_kb".to_string(),
-            value: 8192000.to_string(),
+            name: "mem_total_mb".to_string(),
+            value: 8192.to_string(),
             timestamp: current_unix_time(),
         });
     }
@@ -52,8 +52,8 @@ fn mock_temp_metrics() -> Result<Vec<Metric>, Box<dyn Error>> {
 fn mock_disk_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Error>> {
     let mut metrics = vec![
         Metric {
-            name: "disk_used_kb".to_string(),
-            value: get_random_integer(128000000, 256000000).to_string(),
+            name: "disk_used_mb".to_string(),
+            value: get_random_integer(128000, 256000).to_string(),
             timestamp: current_unix_time(),
         },
         Metric {
@@ -65,8 +65,8 @@ fn mock_disk_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Er
 
     if is_first_iteration {
         metrics.push(Metric {
-            name: "disk_total_kb".to_string(),
-            value: 256000000.to_string(),
+            name: "disk_total_mb".to_string(),
+            value: 256000.to_string(),
             timestamp: current_unix_time(),
         });
     }
@@ -76,13 +76,13 @@ fn mock_disk_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dyn Er
 fn mock_network_metrics() -> Result<Vec<Metric>, Box<dyn Error>> {
     Ok(Vec::from([
         Metric {
-            name: "throughput_received_kbps".to_string(),
-            value: get_random_integer(1000, 10000).to_string(),
+            name: "throughput_received_mbps".to_string(),
+            value: get_random_integer(1, 10).to_string(),
             timestamp: current_unix_time(),
         },
         Metric {
-            name: "throughput_transmitted_kbps".to_string(),
-            value: get_random_integer(1000, 10000).to_string(),
+            name: "throughput_transmitted_mbps".to_string(),
+            value: get_random_integer(1, 10).to_string(),
             timestamp: current_unix_time(),
         },
     ]))
