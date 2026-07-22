@@ -7,7 +7,7 @@ COPY . .
 RUN go build -o api main.go
 
 # Runtime stage
-FROM alpine:latest
+FROM alpine:latest AS production
 WORKDIR /app
 COPY --from=builder /app/api .
 EXPOSE 8080
