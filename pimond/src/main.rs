@@ -32,7 +32,8 @@ async fn combine_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dy
 
 async fn send_http_request(metrics: Vec<Metric>) -> Result<(), Box<dyn Error>> {
     let client = reqwest::Client::new();
-    let backend_url = get_env_variable("BACKEND_URL")?;
+    let backend_uri = get_env_variable("BACKEND_URI")?;
+    let backend_url = format!("http://{}", backend_uri);
     let res = client
         .post(&format!("{}/api/metrics", backend_url))
         .json(&metrics)

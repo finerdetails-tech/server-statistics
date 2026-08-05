@@ -9,7 +9,12 @@ services:
     ports:
       - "8080:8080"
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VISIBLE_BACKEND_URI: ${VISIBLE_BACKEND_URI}
+        VISIBLE_METRICS_SENDING_INTERVAL_SECONDS: ${VISIBLE_METRICS_SENDING_INTERVAL_SECONDS}
+        VISIBLE_METRICS_RETAINING_TIME_DAYS: ${VISIBLE_METRICS_RETAINING_TIME_DAYS}
     env_file: ".env"
     ports:
       - "3000:3000"

@@ -30,7 +30,8 @@ var wsUpgrader = websocket.Upgrader{
 	WriteBufferSize: 524288,
 	CheckOrigin: func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
-		frontendURL := os.Getenv("FRONTEND_URL")
+		frontendURI := os.Getenv("FRONTEND_URI")
+		frontendURL := "http://" + frontendURI
 		return origin == frontendURL
 	},
 }
