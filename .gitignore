@@ -31,3 +31,4 @@ backend/api
 backend/tmp
 backend/build-errors.log
 backend/server_statistics.db
+backend/data/
