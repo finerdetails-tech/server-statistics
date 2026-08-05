@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -31,8 +32,22 @@ type Database struct {
 	*sql.DB
 }
 
+func databasePath() string {
+	if path := os.Getenv("DATABASE_PATH"); path != "" {
+		return path
+	}
+	return "./server_statistics.db"
+}
+
 func NewDatabase() (*Database, error) {
-	db, err := sql.Open("sqlite", "./server_statistics.db")
+	path := databasePath()
+	if dir := filepath.Dir(path); dir != "" {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return nil, fmt.Errorf("failed to create database directory: %w", err)
+		}
+	}
+
+	db, err := sql.Open("sqlite", path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect database: %w", err)
 	}

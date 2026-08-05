@@ -3,6 +3,8 @@ services:
     build: ./backend
     volumes:
      - db-data:/app/data
+    environment:
+      - DATABASE_PATH=/app/data/server_statistics.db
     env_file: ".env"
     ports:
       - "8080:8080"
