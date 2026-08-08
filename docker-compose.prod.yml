@@ -17,4 +17,4 @@ services:
         VISIBLE_METRICS_RETAINING_TIME_DAYS: ${VISIBLE_METRICS_RETAINING_TIME_DAYS}
     env_file: ".env"
     ports:
-      - "3000:3000"
+      - "80:80"

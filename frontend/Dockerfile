@@ -26,6 +26,6 @@ COPY --from=builder /app/dist ./dist
 
 USER node
 
-EXPOSE 3000
+EXPOSE 80
 
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["serve", "-s", "dist", "-l", "80"]
