@@ -8,6 +8,7 @@ services:
      - ./backend/data:/app/data
     environment:
       - DATABASE_PATH=/app/data/server_statistics.db
+      - FRONTEND_URL=http://${DOMAIN_NAME}
     env_file: ".env"
     networks:
       - web
@@ -20,6 +21,9 @@ services:
         VISIBLE_METRICS_SENDING_INTERVAL_SECONDS: ${VISIBLE_METRICS_SENDING_INTERVAL_SECONDS}
         VISIBLE_METRICS_RETAINING_TIME_DAYS: ${VISIBLE_METRICS_RETAINING_TIME_DAYS}
     env_file: ".env"
+    environment:
+      - BASE_URL=/projects/server-statistics/
+      - VISIBLE_WS_BACKEND_URL=wss://${DOMAIN_NAME}/projects/server-statistics/api/metrics
     networks:
       - web
 

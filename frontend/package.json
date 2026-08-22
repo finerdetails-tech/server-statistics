@@ -30,6 +30,7 @@
 		"@preact/preset-vite": "^2.10.2",
 		"@stylistic/eslint-plugin": "^5.6.1",
 		"@types/d3-array": "^3.2.2",
+		"@types/node": "^26.2.0",
 		"@types/three": "^0.182.0",
 		"@types/throttle-debounce": "^5.0.2",
 		"eslint": "^9.39.1",

@@ -11,7 +11,8 @@ services:
     - ./backend/:/app
     env_file: ".env"
     environment:
-      - FRONTEND_URI=localhost:5173
+      - FRONTEND_URL=http://localhost:5173
+
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/ping"]
       interval: 5s
@@ -22,7 +23,7 @@ services:
   frontend:
     env_file: ".env"
     environment:
-      - VISIBLE_BACKEND_URI=localhost:8080
+      - VISIBLE_WS_BACKEND_URL=ws://localhost:8080/api/metrics
     build: 
       context: ./frontend
       dockerfile: Dockerfile.dev

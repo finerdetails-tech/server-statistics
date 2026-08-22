@@ -12,8 +12,7 @@ import { removeUntilConditionIsNoLongerMet } from '../utils'
 import Metric from './Metric'
 
 const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
-const BACKEND_URI: string = import.meta.env.VISIBLE_BACKEND_URI
-const WS_BACKEND_URL: string = `wss://${BACKEND_URI}/api/metrics`
+const WS_BACKEND_URL: string = import.meta.env.VISIBLE_WS_BACKEND_URL
 
 function MetricsContainer ({
   isLandscape, metricPadding, scrollContainerRef, setIsMetricsLoaded
@@ -52,6 +51,7 @@ function MetricsContainer ({
   }, [ setIsMetricsLoaded ])
 
   useEffect(() => {
+    console.log('Connecting to WebSocket:', WS_BACKEND_URL)
     const ws = new WebSocket(WS_BACKEND_URL)
 
     ws.onmessage = handleMetricUpdate
