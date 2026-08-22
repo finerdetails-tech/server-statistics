@@ -31,7 +31,7 @@ var wsUpgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
 		frontendURI := os.Getenv("FRONTEND_URI")
-		frontendURL := "http://" + frontendURI
+		frontendURL := "https://" + frontendURI
 		return origin == frontendURL
 	},
 }

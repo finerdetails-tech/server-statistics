@@ -1,3 +1,5 @@
+name: server-statistics-dev
+
 services:
   backend:
     build:
@@ -8,6 +10,8 @@ services:
     volumes:
     - ./backend/:/app
     env_file: ".env"
+    environment:
+      - FRONTEND_URI=localhost:5173
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/ping"]
       interval: 5s
@@ -17,6 +21,8 @@ services:
 
   frontend:
     env_file: ".env"
+    environment:
+      - VISIBLE_BACKEND_URI=localhost:8080
     build: 
       context: ./frontend
       dockerfile: Dockerfile.dev

@@ -12,9 +12,8 @@ import { removeUntilConditionIsNoLongerMet } from '../utils'
 import Metric from './Metric'
 
 const METRICS_RETAINING_TIME_DAYS: number = Number(import.meta.env.VISIBLE_METRICS_RETAINING_TIME_DAYS) || 30
-const BACKEND_URI: string = import.meta.env.VISIBLE_BACKEND_URI || 'localhost:8080'
-// Backend URI is a bare host:port; prefix the ws:// scheme for the metrics socket.
-const WS_BACKEND_URL: string = `ws://${BACKEND_URI}/api/metrics`
+const BACKEND_URI: string = import.meta.env.VISIBLE_BACKEND_URI
+const WS_BACKEND_URL: string = `wss://${BACKEND_URI}/api/metrics`
 
 function MetricsContainer ({
   isLandscape, metricPadding, scrollContainerRef, setIsMetricsLoaded

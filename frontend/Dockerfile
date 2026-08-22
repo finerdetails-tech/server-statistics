@@ -26,6 +26,6 @@ COPY --from=builder /app/dist ./dist
 
 USER node
 
-EXPOSE 80
+EXPOSE 443
 
-CMD ["serve", "-s", "dist", "-l", "80"]
+CMD ["serve", "-s", "dist", "-l", "443"]

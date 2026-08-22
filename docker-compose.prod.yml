@@ -1,14 +1,18 @@
+name: server-statistics
+
 services:
   backend:
+    hostname: server-statistics-backend
     build: ./backend
     volumes:
      - ./backend/data:/app/data
     environment:
       - DATABASE_PATH=/app/data/server_statistics.db
     env_file: ".env"
-    ports:
-      - "8080:8080"
+    networks:
+      - web
   frontend:
+    hostname: server-statistics-frontend
     build:
       context: ./frontend
       args:
@@ -16,5 +20,9 @@ services:
         VISIBLE_METRICS_SENDING_INTERVAL_SECONDS: ${VISIBLE_METRICS_SENDING_INTERVAL_SECONDS}
         VISIBLE_METRICS_RETAINING_TIME_DAYS: ${VISIBLE_METRICS_RETAINING_TIME_DAYS}
     env_file: ".env"
-    ports:
-      - "80:80"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
