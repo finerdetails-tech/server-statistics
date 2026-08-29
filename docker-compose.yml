@@ -40,7 +40,7 @@ services:
     build: ./pimond
     env_file: ".env"
     environment:
-    - BACKEND_URL=http://backend:8080
+    - BACKEND_URI=backend:8080
     volumes:
     - ./pimond/:/app
     depends_on:
