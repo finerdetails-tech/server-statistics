@@ -30,10 +30,9 @@ async fn combine_metrics(is_first_iteration: bool) -> Result<Vec<Metric>, Box<dy
     Ok(combined_metrics)
 }
 
-async fn send_http_request(metrics: Vec<Metric>) -> Result<(), Box<dyn Error>> {
+async fn send_request(metrics: Vec<Metric>) -> Result<(), Box<dyn Error>> {
     let client = reqwest::Client::new();
-    let backend_uri = get_env_variable("BACKEND_URI")?;
-    let backend_url = format!("http://{}", backend_uri);
+    let backend_url = get_env_variable("BACKEND_URL")?;
     let res = client
         .post(&format!("{}/api/metrics", backend_url))
         .json(&metrics)
@@ -73,7 +72,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             combine_metrics(is_first_iteration).await?
         };
         print!("Sending metrics: {:?}\n", metrics);
-        send_http_request(metrics).await?;
+        send_request(metrics).await?;
 
         is_first_iteration = false;
     }
