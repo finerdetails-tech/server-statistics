@@ -10,6 +10,9 @@ services:
       - DATABASE_PATH=/app/data/server_statistics.db
       - FRONTEND_URL=https://${DOMAIN_NAME}
     env_file: ".env"
+    # Exposing backend locally, so that only `pimond` can access it
+    ports:
+      - "127.0.0.1:8080:8080"
     networks:
       - web
   frontend:
