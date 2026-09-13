@@ -177,6 +177,7 @@ function MetricGraph ({
         <rect
           x={0} y={0} width={graphWidth} height={metricHeight} fill={`url(#${GRADIENT_ID})`} rx={14} />
         <AreaChart
+          graphWidth={graphWidth}
           top={1.5 * surroundingPadding}
           metricData={displayData}
           xScale={dateScale}

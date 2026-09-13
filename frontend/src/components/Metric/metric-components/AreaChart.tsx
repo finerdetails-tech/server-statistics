@@ -19,12 +19,14 @@ const axisTopTickLabelProps = {
   style: {userSelect: 'none'},
   textAnchor: 'middle' as const
 }
+
+const fontSize = 10
 const axisLeftTickLabelProps = {
   dx: '-0.25em',
   dy: '0.25em',
   fill: `var(--color-text)`,
   fontFamily: 'GoogleSansCode, monospace',
-  fontSize: 10,
+  fontSize: fontSize,
   style: {userSelect: 'none'},
   textAnchor: 'end' as const
 }
@@ -59,12 +61,11 @@ const dynamicTimeFormatter = (tick: string, _index: number, ticks: { value: stri
 
 function AreaChart ({
   children,
+  graphWidth,
   isAxesEnabled = true,
   left,
   margin,
   metricData,
-  numTicksX,
-  numTicksY,
   strokeColor,
   top,
   underlay,
@@ -87,10 +88,21 @@ function AreaChart ({
   left?: number
   children?: ComponentChildren
   underlay?: ComponentChildren
-  numTicksX?: number,
-  numTicksY?: number
+  graphWidth?: number,
   isAxesEnabled?: boolean
 }) {
+  const labelPadding = 6
+  const maxLabelChars = 7
+  const maxLabelWidth = (maxLabelChars + labelPadding) * fontSize * 0.6
+  const numTicksX = graphWidth
+    ? Math.floor((graphWidth || 0) / maxLabelWidth)
+    : undefined
+
+  if (numTicksX) {
+    console.log('graphWidth:', graphWidth)
+    console.log('maxLabelWidth:', maxLabelWidth)
+    console.log('numTicksX:', numTicksX)
+  }
 
   const xAccessor = useCallback((d: MetricData) => xScale(getDate(d)) || 0, [ xScale ])
   const yAccessor = useCallback((d: MetricData) => yScale(getMetricValue(d)) || 0, [ yScale ])
@@ -123,7 +135,6 @@ function AreaChart ({
 
           <AxisLeft
             scale={yScale}
-            numTicks={numTicksY}
             stroke={`var(--color-text)`}
             strokeWidth={2}
             tickStroke={`var(--color-text)`}
