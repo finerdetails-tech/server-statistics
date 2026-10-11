@@ -13,7 +13,7 @@ import type {
   Metric as Metric, MetricData
 } from 'types'
 import {
-  aggregateMetrics, getDate, getMetricValue
+  downsampleMetrics, getDate, getMetricValue
 } from '../../../utils'
 import AreaChart from '../metric-components/AreaChart'
 import CustomBrush, { PATTERN_ID } from '../metric-components/CustomBrush'
@@ -59,7 +59,6 @@ function MetricGraph ({
     Value: parseFloat(Value)
   })), [ metrics ])
 
-  const brushData = useMemo(() => aggregateMetrics(metricData), [ metricData ])
   const metricContainerHeightMinusBottomPadding = metricContainerHeight - (surroundingPadding)
 
   const metricContainerWidthMinusRightPadding = metricContainerWidth - surroundingPadding
@@ -67,6 +66,7 @@ function MetricGraph ({
     ? metricContainerWidthMinusRightPadding * (3 / 4)
     : metricContainerWidth
   const graphWidth = metricGraphContainerWidth - (surroundingPadding * 3)
+  const brushData = useMemo(() => downsampleMetrics(metricData, graphWidth), [ metricData, graphWidth ])
 
   const metricHeight = isHeaderOnRight
     ? metricContainerHeightMinusBottomPadding
@@ -100,12 +100,13 @@ function MetricGraph ({
       x0, x1
     } = brushFilter
 
+    // TODO: optimize with binary search: search cutoff points for x0 and x1, slice array accordingly
     const filteredMetricData = metricData.filter((metric) => {
       const x = getDate(metric).getTime()
       return x > x0 && x < x1
     })
 
-    return aggregateMetrics(filteredMetricData)
+    return downsampleMetrics(filteredMetricData, graphWidth)
   }, [ metricData, brushFilter ])
 
 
